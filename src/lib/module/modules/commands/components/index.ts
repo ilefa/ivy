@@ -15,5 +15,5 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * as CommandComponent from './component';
-export * as MultiCommand from './multi';
+export * from './component';
+export * from './multi';

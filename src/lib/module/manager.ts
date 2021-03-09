@@ -15,13 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Module from './module';
-
+import { Module } from './module';
 import { Client } from 'discord.js';
 import { IvyEngine } from '../engine';
 import { numberEnding } from '../util';
 
-export default class ModuleManager {
+export class ModuleManager {
 
     engine: IvyEngine;
     client: Client;

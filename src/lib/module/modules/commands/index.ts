@@ -15,28 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ModuleManager from './manager';
-
-import { Client } from 'discord.js';
-
-export abstract class Module {
-
-    name: string;
-    client: Client;
-    manager: ModuleManager;
-
-    constructor(name: string) {
-        this.name = name;
-    }
-
-    /**
-     * Called when the module is enabled.
-     */
-    abstract start(): void;
-
-    /**
-     * Called when the module is disabled.
-     */
-    abstract end(): void;
-
-}
+export * from './command';
+export * from './components';
+export * from './manager';
+export * from './test';

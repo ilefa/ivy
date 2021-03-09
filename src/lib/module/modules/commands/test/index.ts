@@ -15,6 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { TestCommand, TestCommandEntry } from './command';
-export { GenericTestFlow, TestFlow } from './flow';
-export { GenericTestCommand } from './generic';
+export * from './command';
+export * from './flow';
+export * from './generic';

@@ -15,16 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Module from '../../module';
 
-import { GenericTestCommand } from './test/generic';
 import { User, Message, Client } from 'discord.js';
 import { IvyEmbedIcons, IvyEngine } from '../../../engine';
-import { TestCommand, TestCommandEntry } from './test/command';
-import { Command, CommandEntry, CommandReturn } from './command';
 import { codeBlock, generateEmbed, generateSimpleEmbed, numberEnding } from '../../../util';
+import { Command, CommandEntry, CommandReturn, GenericTestCommand, Module, TestCommand, TestCommandEntry } from '../../';
 
-export default class CommandManager extends Module {
+export class CommandManager extends Module {
     
     client: Client;
     engine: IvyEngine;

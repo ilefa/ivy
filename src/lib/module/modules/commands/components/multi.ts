@@ -15,15 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Module from '../../../module';
-import CommandComponent from './component';
 
+import { Module } from '../../../';
+import { CommandComponent } from './component';
 import { IvyEmbedIcons } from '../../../../engine';
 import { Command, CommandReturn } from '../command';
 import { EmbedFieldData, Message, User } from 'discord.js';
 import { bold, generateSimpleEmbed } from '../../../../util';
 
-export default abstract class MultiCommand<M extends Module> extends Command {
+export abstract class MultiCommand<M extends Module> extends Command {
     
     base: string;
     baseHelp: string;

@@ -16,11 +16,7 @@
  */
 
 export * from './lib/engine';
+export * from './lib/stash';
+export * from './lib/module';
 
 export * as util from './lib/util';
-export * as Module from './lib/module/module';
-export * as ModuleManager from './lib/module/manager';
-
-export * from './lib/module/modules/commands/command';
-export * from './lib/module/modules/commands/components';
-export * from './lib/module/modules/commands/test';

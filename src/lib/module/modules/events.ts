@@ -15,10 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Module from '../module';
-import CommandManager from './commands/manager';
-
 import { IvyEngine } from '../../engine';
+import { CommandManager, Module } from '../';
 import { Message, MessageReaction } from 'discord.js';
 
 export abstract class EventManager extends Module {

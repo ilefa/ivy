@@ -6,12 +6,12 @@
   "description": "Specially crafted discord.js wrapper",
   "main": "src/index.ts",
   "exports": {
-      ".": [
-          {
-              "import": "./src/index.ts"
-          },
-          "./src/index.ts"
-      ]
+    ".": [
+      {
+        "import": "./src/index.ts"
+      },
+      "./src/index.ts"
+    ]
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,10 @@
     "discord.js": "^12.5.1",
     "moment": "^2.29.1",
     "parse-duration": "^0.4.4",
+    "redis": "^3.0.2",
     "tinygradient": "^1.1.3"
+  },
+  "devDependencies": {
+    "@types/redis": "^2.8.28"
   }
 }

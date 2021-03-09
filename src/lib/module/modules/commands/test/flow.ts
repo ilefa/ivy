@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Module from '../../../module';
+import { Module } from '../../../';
 import { Message } from 'discord.js';
 
 export interface TestFlow {

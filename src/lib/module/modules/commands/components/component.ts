@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import MultiCommand from './multi';
-import Module from '../../../module';
 
+import { Module } from '../../../';
+import { MultiCommand } from './multi';
 import { CommandReturn } from '../command';
 import { Message, User } from 'discord.js';
 
-export default abstract class CommandComponent<M extends Module> {
+export abstract class CommandComponent<M extends Module> {
 
     name: string;
     help: string;

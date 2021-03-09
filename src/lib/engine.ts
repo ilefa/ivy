@@ -15,18 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Module from './module/module';
 import StartupRunnable from './startup';
-import ModuleManager from './module/manager';
-import CommandManager from './module/modules/commands/manager';
 
 import { Logger } from './logger';
 import { spawn } from 'child_process';
-import { Command } from './module/modules/commands/command';
-import { TestCommand } from './module/modules/commands/test/command';
-import { GenericTestCommand } from './module/modules/commands/test/generic';
-import { DefaultEventManager, EventManager } from './module/modules/events';
 import { Client, ClientOptions, ColorResolvable, Guild, PresenceData, User } from 'discord.js';
+import {
+    Command,
+    CommandManager,
+    DefaultEventManager,
+    EventManager,
+    GenericTestCommand,
+    Module,
+    ModuleManager,
+    TestCommand
+} from './module';
 
 export type IvyEngineOptions = {
     token: string;

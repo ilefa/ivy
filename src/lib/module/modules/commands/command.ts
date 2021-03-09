@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import CommandManager from './manager';
-
+import { CommandManager } from './manager';
 import { User, Message, EmbedFieldData } from 'discord.js';
 
 export abstract class Command {
