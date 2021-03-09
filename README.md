@@ -1,6 +1,6 @@
 # Ivy
 
-Ivy is a Typescript library that deals with the fundamentals of building a Discord.js-based bot.
+Ivy is a TypeScript library that deals with the fundamentals of building a Discord.js-based bot.
 
 ## Installation
 
