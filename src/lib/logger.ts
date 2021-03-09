@@ -75,9 +75,9 @@ export type LoggingLevel = {
 }
 
 export type LoggingPrefs = {
-    date: Colors;
-    pipe: Colors;
-    header: Colors;
+    date?: Colors;
+    pipe?: Colors;
+    header?: Colors;
 }
 
 export class Logger {
@@ -90,11 +90,14 @@ export class Logger {
     }
 
     constructor(opts?: LoggingPrefs) {
-        this.opts = opts || this.defaultPrefs;
+        this.opts = opts 
+            ? Object.assign(opts, this.defaultPrefs) 
+            : this.defaultPrefs;
     }
 
     /**
-     * Logs a message
+     * Logs a message.
+     * 
      * @param color    the color of the header
      * @param header   the module header
      * @param message  the message
@@ -112,31 +115,34 @@ export class Logger {
      * Logs a message to stdout.
      * @param message the message
      */
-    unlisted = (message: string, ...rest: any[]) => console.log(message, rest);
+    unlisted = (message: string) => console.log(message);
 
     /**
-     * Logs an informational message
+     * Logs an informational message.
+     * 
      * @param header   the module header
      * @param message  the message
      */
     info = (header: string, message: string) => this.log(Levels.INFO, header, message);
 
     /**
-     * Logs a warning
+     * Logs a warning.
+     * 
      * @param header   the module header
      * @param message  the message
      */
     warn = (header: string, message: string) => this.log(Levels.WARN, header, message);
 
     /**
-     * Logs an error
+     * Logs an error.
+     * 
      * @param header   the module header
      * @param message  the message
      */
     severe = (header: string, message: string) => this.log(Levels.ERROR, header, message);
 
     /**
-     * Logs a thrown exception
+     * Logs a thrown exception.
      *
      * @param exception  the thrown exception
      * @param header     the module header
@@ -145,9 +151,11 @@ export class Logger {
     except = <T extends Error>(exception: T, header: string, base: string) => this.log(Levels.ERROR, header, base + ': ' + exception);
 
     /**
-     * Wraps a string in a color
+     * Wraps a string in a color.
+     * 
      * @param {Colors} color   the color to wrap it in
      * @param {string} content the content to be wrapped 
      */
     wrap = (color: Colors, content: string) => `${color + content + Colors.RESET}`;
+
 }

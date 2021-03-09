@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 import { Module } from '../../../';
 import { CommandComponent } from './component';
 import { IvyEmbedIcons } from '../../../../engine';

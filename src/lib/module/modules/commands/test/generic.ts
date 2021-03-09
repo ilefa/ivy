@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Module from '../../../module';
-
+import { Module } from '../../../';
 import { GenericTestFlow } from './flow';
 import { User, Message } from 'discord.js';
 import { Command, CommandReturn } from '../command';

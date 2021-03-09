@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+import { Module } from '../../module';
 import { User, Message, Client } from 'discord.js';
 import { IvyEmbedIcons, IvyEngine } from '../../../engine';
 import { codeBlock, generateEmbed, generateSimpleEmbed, numberEnding } from '../../../util';
-import { Command, CommandEntry, CommandReturn, GenericTestCommand, Module, TestCommand, TestCommandEntry } from '../../';
+import { Command, CommandEntry, CommandReturn, GenericTestCommand, TestCommand, TestCommandEntry } from '.';
 
 export class CommandManager extends Module {
     
@@ -70,7 +70,7 @@ export class CommandManager extends Module {
 
     start() {
         this.commands = this.commands.sort((a, b) => a.name.localeCompare(b.name));
-        this.engine.logger.info(this.name, `Registered ${this.commands.length} command${numberEnding(this.commands.length)}.`)
+        this.engine.logger.info(this.name, `Registered ${this.commands.length} command${numberEnding(this.commands.length)}.`);
     }
 
     end = () => this.commands = [];

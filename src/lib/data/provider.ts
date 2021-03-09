@@ -15,11 +15,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from './lib/data';
-export * from './lib/engine';
-export * from './lib/logger';
-export * from './lib/stash';
-export * from './lib/module';
-export * from './lib/startup';
+import { Guild } from 'discord.js';
 
-export * as util from './lib/util';
+export interface GuildDataProvider<P> {
+    
+    /**
+     * Attempts to retrieve guild data of type P
+     * from whatever source is available by the
+     * implementing service.
+     * 
+     * @param guild the guild to retrieve data for
+     */
+    load(guild: Guild): P;
+    
+    /**
+     * Attempts to save guild data of type P
+     * for a specified guild to any available
+     * data source, as specified by the
+     * implementing service.
+     * 
+     * @param guild the guild to save data for
+     * @param data the data to save for the guild
+     */
+    save(guild: Guild, data: P): void;
+
+}
+
+export type GuildTokenLike = {
+    prefix: string;
+}

@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export default interface StartupRunnable {
-    run(): void;
+import { IvyEngine } from './engine';
+
+export interface StartupRunnable {
+    run(engine: IvyEngine): void;
 }

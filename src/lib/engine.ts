@@ -15,11 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import StartupRunnable from './startup';
-
 import { Logger } from './logger';
 import { spawn } from 'child_process';
-import { Client, ClientOptions, ColorResolvable, Guild, PresenceData, User } from 'discord.js';
+import { StartupRunnable } from './startup';
+import { GuildDataProvider, GuildTokenLike } from './data';
+
+import {
+    Client,
+    ClientOptions,
+    ColorResolvable,
+    Guild,
+    PresenceData,
+    User
+} from 'discord.js';
+
 import {
     Command,
     CommandManager,
@@ -33,16 +42,15 @@ import {
 
 export type IvyEngineOptions = {
     token: string;
-    prefix: string;
     name: string;
     logger: Logger;
-    gitRepo: string;
+    gitRepo?: string;
     superPerms: string[];
     reportErrors: string[];
     color: ColorResolvable;
-    icons: IvyEmbedIcons;
-    eventHandler?: EventManager;
+    provider: GuildDataProvider<GuildTokenLike>;
     startup?: StartupRunnable;
+    eventHandler?: EventManager;
     presence?: PresenceData;
     discord?: ClientOptions;
 }
@@ -72,13 +80,21 @@ export abstract class IvyEngine {
     opts: IvyEngineOptions;
     moduleManager: ModuleManager;
     commandManager: CommandManager;
+    provider: GuildDataProvider<GuildTokenLike>;
 
     private HASH_PATTERN = /\b[0-9a-f]{5,40}\b/;
+    private GIT_REPO_PATTERN = /\w+\/\w+/;
+    private vcsEnabled: boolean;
 
     constructor(opts: IvyEngineOptions) {
         this.start = Date.now();
         this.opts = opts;
         this.logger = opts.logger;
+        this.vcsEnabled = !!opts.gitRepo;
+        if (this.vcsEnabled && !this.GIT_REPO_PATTERN.test(this.opts.gitRepo)) {
+            this.vcsEnabled = false;
+        }
+
         this.client = new Client(opts.discord || {
             partials: ['CHANNEL', 'MESSAGE', 'REACTION'],
             fetchAllMembers: true
@@ -93,13 +109,16 @@ export abstract class IvyEngine {
         this.registerFlows();
         this.registerModules();
 
-        this.opts.startup?.run();
+        this.opts.startup?.run(this);
         this.moduleManager.init();
 
+        this.client.login(opts.token);
         this.client.on('ready', async () => {
-            this.logger.info(opts.name, `Release channel: ${await this.getReleaseChannel()}, version: ${await this.getCurrentVersion()}`);
+            if (this.vcsEnabled) {
+                this.logger.info(opts.name, `Release channel: ${await this.getReleaseChannel()}, version: ${await this.getCurrentVersion()}`);
+            }
+
             this.logger.info(opts.name, 'Successfully connected to Discord.');
-        
             this.client.user.setPresence(opts.presence || {
                 status: 'online',
                 activity: {
@@ -126,6 +145,12 @@ export abstract class IvyEngine {
     registerCommand = (name: string, command: Command) => this.commandManager.registerCommand(name, command);
 
     /**
+     * Registers a module.
+     * @param module the module instance
+     */
+    registerModule = (module: Module) => this.moduleManager.registerModule(module);
+
+    /**
      * Registers a flow.
      * @param flow the flow to register
      */
@@ -137,9 +162,7 @@ export abstract class IvyEngine {
      * @param flow the managed flow to register
      * @param module the manager for this flow
      */
-    registerManagedFlow = <T extends Module>(flow: GenericTestCommand<T>, module: T) => {
-        this.commandManager.registerGenericTestFlow(flow, module);
-    }
+    registerManagedFlow = <T extends Module>(flow: GenericTestCommand<T>, module: T) => this.commandManager.registerGenericTestFlow(flow, module);
 
     /**
      * Returns whether or not a given user has
@@ -181,7 +204,10 @@ export abstract class IvyEngine {
                 return rej(out.stderr.join('').trim());
             }
 
-            res(out.stdout.join('').trim());
+            res(out
+                .stdout
+                .join('')
+                .trim());
         })
     });
 
@@ -189,6 +215,10 @@ export abstract class IvyEngine {
      * Returns the current git version of this project.
      */
     getCurrentVersion = async () => {
+        if (!this.vcsEnabled) {
+            return 'unknown';
+        }
+
         let res = await this.execGit('rev-parse HEAD').catch(err => null);
         if (!this.HASH_PATTERN.test(res)) {
             return 'unknown';
@@ -201,6 +231,10 @@ export abstract class IvyEngine {
      * Returns the current upstream git version of this project.
      */
     getUpstreamVersion = async () => {
+        if (!this.vcsEnabled) {
+            return 'unknown';
+        }
+
         let res = await this.execGit(`ls-remote git@github.com:${this.opts.gitRepo}.git | grep refs/heads/${await this.getReleaseChannel()} | cut -f 1`).catch(err => null);
         if (!res) {
             return 'unknown';   
@@ -213,6 +247,10 @@ export abstract class IvyEngine {
      * Returns the current "release channel" aka branch of this local build.
      */
     getReleaseChannel = async () => {
+        if (!this.vcsEnabled) {
+            return 'unknown';
+        }
+
         let res = await this.execGit('rev-parse --abbrev-ref HEAD').catch(err => null);
         if (!res || res.startsWith('fatal')) {
             return 'unknown';
@@ -226,6 +264,10 @@ export abstract class IvyEngine {
      * @param then what to do with the new version, or "Failure" if it doesn't succeed.
      */
     update = async (then?: (version: String) => void) => {
+        if (!this.vcsEnabled) {
+            return then('Failure');
+        }
+
         let local = await this.getCurrentVersion();
         let remote = await this.getUpstreamVersion();
         if (local.toLowerCase() === remote.toLowerCase()) {

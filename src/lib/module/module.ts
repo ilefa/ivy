@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ModuleManager from './manager';
-
 import { Client } from 'discord.js';
+import { ModuleManager } from './manager';
 
 export abstract class Module {
 

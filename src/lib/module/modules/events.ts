@@ -15,8 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Module } from '../module';
 import { IvyEngine } from '../../engine';
-import { CommandManager, Module } from '../';
+import { CommandManager } from './commands';
 import { Message, MessageReaction } from 'discord.js';
 
 export abstract class EventManager extends Module {
@@ -28,7 +29,9 @@ export abstract class EventManager extends Module {
         super('Events');
         this.engine = engine;
         this.commandCenter = this.engine.commandManager;
-        
+    }
+
+    start() {
         this.client.on('message', _ => this.onMessage(_));
         this.client.on('messageReactionAdd', _ => this.onReact(_));
         this.client.on('messageReactionRemove', _ => this.onReactRemoved(_));
@@ -37,8 +40,7 @@ export abstract class EventManager extends Module {
         process.on('unhandledRejection', (err: any) => this.onRejection(err));
         process.on('uncaughtException', (err: any) => this.onException(err));
     }
-
-    start() {}
+    
     end() {}
 
     /**
@@ -49,8 +51,9 @@ export abstract class EventManager extends Module {
         if (message.author.bot) {
             return;
         }
-                
-        if (!message.content.startsWith(this.engine.opts.prefix)) {
+              
+        let provider = this.engine.opts.provider.load(message.guild);
+        if (!message.content.startsWith(provider.prefix)) {
             return;
         }
     
