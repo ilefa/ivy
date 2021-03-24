@@ -16,7 +16,14 @@ npm install ilefa/ivy
 import moment from 'moment';
 
 import { Client, Guild } from 'discord.js';
-import { Colors, GuildDataProvider, GuildTokenLike, IvyEngine, Logger, StartupRunnable } from '.';
+import {
+    Colors,
+    GuildDataProvider,
+    GuildTokenLike,
+    IvyEngine,
+    Logger,
+    StartupRunnable
+} from 'ilefa/ivy';
 
 export default class StonksBot extends IvyEngine {
 
@@ -32,7 +39,7 @@ export default class StonksBot extends IvyEngine {
             reportErrors: [
                 'xxxxxxxxxxxxxx'                // any servers in which verbose error details should be reported
             ],
-            color: '0xFF9800',                  // a hex code that should be used for embed coloring and such (0x<hex-code>)
+            color: 0xFF9800,                    // a hex code that should be used for embed coloring and such (0x<hex-code>)
             provider: new DataProvider(),       // the guild data provider for this bot
             startup: new StartupHandler(),      // an optional instance of a runnable which is called on startup
             // eventHandler: new SomeHandler(), // an optional instance of an event handler that should be used
