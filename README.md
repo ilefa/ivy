@@ -84,6 +84,7 @@ class DataProvider implements GuildDataProvider<CustomGuildToken> {
 
 }
 
+// Define any per-server preferences here, such as feed channels, or restricted roles, or whatever you'd like
 type CustomGuildToken = GuildTokenLike & {
     games: {
         category: string;
@@ -92,6 +93,7 @@ type CustomGuildToken = GuildTokenLike & {
     }
 }
 
+// Will be executed upon startup - maybe have some flashly watermark or something cool!
 class StartupHandler implements StartupRunnable {
     run(engine: IvyEngine) {
         let logger: Logger = new Logger();
@@ -101,6 +103,7 @@ class StartupHandler implements StartupRunnable {
     }
 }
 
+// Instantiate the Ivy-engine extended class, and you'll be on your way!
 new StonksBot();
 ```
 
@@ -114,11 +117,11 @@ new StonksBot();
 | ``superPerms``     | ``string[]``             | an array of discord snowflakes ids corresponding to users that will have full privileges for the bot, regardless of set permissions in commands |
 | ``reportErrors``   | ``string[]``             | an array of discord snowflakes ids corresponding to servers in which the bot will display verbose information on command errors |
 | ``color``          | ``string \| number``     | a color code, either a hex number, or hex string that will be respected by embeds and other elements created by ivy utilities |
-| ``provider``       | ``GuildDataProvider<T>`` | an ivy guild data provider instance, which will allow ivy to save and load guild data of your choosing for internal systems |
-| ``startup``        | ``StartupRunnable``      | an instance of a runnable that will be called upon startup; feel free to place watermarks or other cool things the bot will display or do on startup |
-| ``eventHandler``   | ``EventHandler``         | an instance of an event handler that will process events for the bot, such as messages, reactions, and errors |
-| ``presence``       | ``PresenceData``         | a standard discord.js [presence data](https://discord.js.org/#/docs/main/stable/typedef/PresenceData) object |
-| ``discord``        | ``ClientOptions``        | a standard discord.js [client options](https://discord.js.org/#/docs/main/stable/typedef/ClientOptions) object |  
+| ``provider``       | [GuildDataProvider<T>](src/lib/data/provider.ts) | an ivy guild data provider instance, which will allow ivy to save and load guild data of your choosing for internal systems |
+| ``startup``        | [StartupRunnable](src/lib/startup.ts)      | an instance of a runnable that will be called upon startup; feel free to place watermarks or other cool things the bot will display or do on startup |
+| ``eventHandler``   | [EventHandler](src/lib/module/modules/events.ts)         | an instance of an event handler that will process events for the bot, such as messages, reactions, and errors |
+| ``presence``       | [PresenceData](https://discord.js.org/#/docs/main/stable/typedef/PresenceData)    | presence (status) information for the bot to respect |
+| ``discord``        | [ClientOptions](https://discord.js.org/#/docs/main/stable/typedef/ClientOptions)  | custom discord api client options, such as sharding, privileged intents, etc. |  
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
