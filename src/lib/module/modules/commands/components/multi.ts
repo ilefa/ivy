@@ -24,16 +24,12 @@ import { bold, generateSimpleEmbed } from '../../../../util';
 
 export abstract class MultiCommand<M extends Module> extends Command {
     
-    base: string;
-    baseHelp: string;
-    baseManager: M;
-    basePermission: number;
     components: Map<string, CommandComponent<M>>;
 
-    constructor(base: string,
-                basePermission: number,
-                baseManager: M,
-                baseHelp: string = 'Invalid usage, please reference the command list below.') {
+    constructor(public base: string,
+                public basePermission: number,
+                public baseManager: M,
+                public baseHelp: string = 'Invalid usage, please reference the command list below.') {
         super(base, baseHelp, null, [], basePermission);
 
         this.base = base;

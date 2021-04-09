@@ -15,7 +15,11 @@ npm install ilefa/ivy
 ```ts
 import moment from 'moment';
 
-import { Client, Guild } from 'discord.js';
+import {
+    Client,
+    Guild
+} from 'discord.js';
+
 import {
     Colors,
     GuildDataProvider,
@@ -66,7 +70,7 @@ export default class StonksBot extends IvyEngine {
 
 class DataProvider implements GuildDataProvider<CustomGuildToken> {
     
-    load(guild: Guild): CustomGuildToken {
+    async load(guild: Guild): Promise<CustomGuildToken> {
         // load from SQL, or wherever else
         return {
             prefix: '.',
@@ -78,7 +82,7 @@ class DataProvider implements GuildDataProvider<CustomGuildToken> {
         }
     }
     
-    save(guild: Guild, data: CustomGuildToken): void {
+    async save(guild: Guild, data: CustomGuildToken): Promise<void> {
         // save to SQL, or wherever else
     }
 
@@ -93,7 +97,7 @@ type CustomGuildToken = GuildTokenLike & {
     }
 }
 
-// Will be executed upon startup - maybe have some flashly watermark or something cool!
+// Will be executed upon startup - maybe add some flashly watermark or something cool!
 class StartupHandler implements StartupRunnable {
     run(engine: IvyEngine) {
         let logger: Logger = new Logger();
@@ -103,7 +107,7 @@ class StartupHandler implements StartupRunnable {
     }
 }
 
-// Instantiate the Ivy-engine extended class, and you'll be on your way!
+// Instantiate the Ivy-engine extended class, and Ivy will take care of the rest!
 new StonksBot();
 ```
 
@@ -122,6 +126,76 @@ new StonksBot();
 | ``eventHandler``   | [EventHandler](src/lib/module/modules/events.ts)         | an instance of an event handler that will process events for the bot, such as messages, reactions, and errors |
 | ``presence``       | [PresenceData](https://discord.js.org/#/docs/main/stable/typedef/PresenceData)    | presence (status) information for the bot to respect |
 | ``discord``        | [ClientOptions](https://discord.js.org/#/docs/main/stable/typedef/ClientOptions)  | custom discord api client options, such as sharding, privileged intents, etc. |  
+
+## Per-Guild Data
+Depending on what kind of project you are using this framework for, it may be required to store per-guild information such as prefixes, or some special channel IDs.
+
+The GuildDataProvider API will give you a clean and structured way to handle this data. All you need to do is supply an instance of ``GuildDataProvider<P>``,
+and define a type that will specify what the data per-guild will look like.
+
+Let's suppose that a guild has to store information as to where certain logs should be sent - that would look something like this:
+```ts
+import { GuildDataProvider } from 'ilefa/ivy';
+
+export type CustomGuildToken = GuildTokenLike & {
+    logChannel: string; // let's store the channel ID as a string
+    feedChannel: string; // and here, let's store another fictious channel's ID as a string
+}
+
+export default class DataProvider extends GuildDataProvider<CustomGuildToken> {
+
+    async load(guild: Guild): Promise<CustomGuildToken> {
+        // implement some logic of grabbing the token from a database of any sort
+        let data = ...;
+
+        return {
+            // prefixes are required by GuildTokenLike, so if you want one constant prefix, just supply an unchanging string
+            prefix: '.',
+            logChannel: data.logChannel,
+            feedChannel: data.feedChannel
+        }
+    }
+    
+    async save(guild: Guild, data: CustomGuildToken): Promise<void> {
+        // implement some logic of saving the token to your database
+    }
+
+}
+
+```
+
+Additionally, you can use the included ``CachedGuildDataProvider`` to cache the results of guild tokens if you have a Redis database handy.
+The implementation of the cached provider is quite similar as the default provider:
+
+```ts
+import { CachedGuildDataProvider } from 'ilefa/ivy';
+
+// We will be utilizing the same CustomGuildToken as the previous example - so that's where this type comes from.
+export default class DataProvider extends CachedGuildDataProvider<CustomGuildToken> {
+
+    // Once load() is called, it will call fetch() in case the data is not available in the cache.
+    async fetch(guild: Guild): Promise<CustomGuildToken> {
+        // implement some logic of grabbing the token from a database of any sort
+        let data = ...;
+
+        return {
+            // prefixes are required by GuildTokenLike, so if you want one constant prefix, just supply an unchanging string
+            prefix: '.',
+            logChannel: data.logChannel,
+            feedChannel: data.feedChannel
+        }
+    }
+
+    /**
+     * Once this method is called, the cache will also be updated with the new data
+     * You don't need to try to update the cache from within here.
+     */
+    async update(guild: Guild, data: CustomGuildToken): Promise<void> {
+        // implement some logic of saving the token to your database
+    }
+
+}
+```
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.

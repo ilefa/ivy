@@ -23,9 +23,7 @@ import { codeBlock, CUSTOM_PERMS, emboss, timeDiff } from '../../../../util';
 
 export abstract class TestCommand extends Command implements TestFlow {
 
-    name: string;
-
-    constructor(name: string) {
+    constructor(public name: string) {
         super(name, null, null, [], CUSTOM_PERMS.SUPERMAN);
     }
 
@@ -57,18 +55,12 @@ export abstract class TestCommand extends Command implements TestFlow {
 
 export class TestCommandEntry {
 
-    name: string;
-    command: TestCommand | GenericTestCommand<any>;
-
     /**
      * A wrapped test flow instance.
      * 
      * @param name the name of the flow
      * @param command the flow object
      */
-    constructor(name: string, command: TestCommand | GenericTestCommand<any>) {
-        this.name = name;
-        this.command = command;
-    }
+    constructor(public name: string, public command: TestCommand | GenericTestCommand<any>) {}
 
 }

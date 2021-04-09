@@ -43,9 +43,6 @@ export type StashKeyspace<K> = {
 
 export class Stash<K, T> {
 
-    opts: StashPreferences<K, T>;
-    redis: RedisClient;
-
     private prefix: string;
     private delimiter: string;
     private del: (...keys: string[]) => Promise<number>;
@@ -64,7 +61,7 @@ export class Stash<K, T> {
     private sismember: (key: string, member: string) => Promise<boolean>;
     private smembers: (key: string) => Promise<string[]>;
 
-    constructor(opts: StashPreferences<K, T>, redis?: RedisClient) {
+    constructor(public opts: StashPreferences<K, T>, public redis?: RedisClient) {
         this.opts = opts;
         this.prefix = opts.keyspace.prefix;
         this.delimiter = opts.keyspace.delimiter;

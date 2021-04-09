@@ -26,7 +26,7 @@ export interface GuildDataProvider<P> {
      * 
      * @param guild the guild to retrieve data for
      */
-    load(guild: Guild): P;
+    load(guild: Guild): Promise<P>;
     
     /**
      * Attempts to save guild data of type P

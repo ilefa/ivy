@@ -22,12 +22,10 @@ import { numberEnding } from '../util';
 
 export class ModuleManager {
 
-    engine: IvyEngine;
     client: Client;
     modules: Module[];
 
-    constructor(engine: IvyEngine) {
-        this.engine = engine;
+    constructor(public engine: IvyEngine) {
         this.client = engine.client;
         this.modules = [];
     }

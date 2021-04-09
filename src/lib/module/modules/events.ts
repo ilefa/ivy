@@ -47,12 +47,17 @@ export abstract class EventManager extends Module {
      * Fired when an incoming message is received.
      * @param message the incoming message
      */
-    onMessage = (message: Message) => {
+    onMessage = async (message: Message) => {
         if (message.author.bot) {
             return;
         }
               
-        let provider = this.engine.opts.provider.load(message.guild);
+        let provider = await this
+            .engine
+            .opts
+            .provider
+            .load(message.guild);
+            
         if (!message.content.startsWith(provider.prefix)) {
             return;
         }

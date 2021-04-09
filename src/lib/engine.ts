@@ -77,7 +77,6 @@ export abstract class IvyEngine {
     client: Client;
     logger: Logger;
     icons: IvyEmbedIcons;
-    opts: IvyEngineOptions;
     moduleManager: ModuleManager;
     commandManager: CommandManager;
     provider: GuildDataProvider<GuildTokenLike>;
@@ -86,9 +85,8 @@ export abstract class IvyEngine {
     private GIT_REPO_PATTERN = /\w+\/\w+/;
     private vcsEnabled: boolean;
 
-    constructor(opts: IvyEngineOptions) {
+    constructor(public opts: IvyEngineOptions) {
         this.start = Date.now();
-        this.opts = opts;
         this.logger = opts.logger;
         this.vcsEnabled = !!opts.gitRepo;
         if (this.vcsEnabled && !this.GIT_REPO_PATTERN.test(this.opts.gitRepo)) {
@@ -184,6 +182,34 @@ export abstract class IvyEngine {
                     .opts
                     .superPerms
                     .some(id => user.id === id)
+    }
+
+    /**
+     * Attempts to find a guild using the Discord.js
+     * instance cache, and if not found, queries the
+     * Discord API.
+     * 
+     * @param id the id of the guild
+     */
+    findGuild = async (id: string) => {
+        return await this
+            .client
+            .guilds
+            .fetch(id);
+    }
+
+    /**
+     * Attempts to find a user using the Discord.js
+     * instance cache, and if not found, queries the
+     * Discord API.
+     * 
+     * @param id the id of the user
+     */
+    findUser = async (id: string) => {
+        return await this
+            .client
+            .users
+            .fetch(id);
     }
 
     /**

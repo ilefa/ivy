@@ -20,13 +20,10 @@ import { ModuleManager } from './manager';
 
 export abstract class Module {
 
-    name: string;
     client: Client;
     manager: ModuleManager;
 
-    constructor(name: string) {
-        this.name = name;
-    }
+    constructor(public name: string) {}
 
     /**
      * Called when the module is enabled.

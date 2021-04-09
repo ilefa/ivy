@@ -24,9 +24,8 @@ import { codeBlock, CUSTOM_PERMS, emboss, timeDiff } from '../../../../util';
 export abstract class GenericTestCommand<M extends Module> extends Command implements GenericTestFlow<M> {
 
     module: M;
-    name: string;
 
-    constructor(name: string) {
+    constructor(public name: string) {
         super(name, null, null, [], CUSTOM_PERMS.SUPERMAN);
     }
 

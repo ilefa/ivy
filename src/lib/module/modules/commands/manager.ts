@@ -18,17 +18,30 @@
 import { Module } from '../../module';
 import { User, Message, Client } from 'discord.js';
 import { IvyEmbedIcons, IvyEngine } from '../../../engine';
-import { codeBlock, generateEmbed, generateSimpleEmbed, numberEnding } from '../../../util';
-import { Command, CommandEntry, CommandReturn, GenericTestCommand, TestCommand, TestCommandEntry } from '.';
+
+import {
+    codeBlock,
+    generateEmbed,
+    generateSimpleEmbed,
+    numberEnding
+} from '../../../util';
+
+import {
+    Command,
+    CommandEntry,
+    CommandReturn,
+    GenericTestCommand,
+    TestCommand,
+    TestCommandEntry
+} from '.';
 
 export class CommandManager extends Module {
     
     client: Client;
-    engine: IvyEngine;
     commands: CommandEntry[];
     testFlows: TestCommandEntry[];
     
-    constructor(engine: IvyEngine) {
+    constructor(public engine: IvyEngine) {
         super('Commands');
         this.engine = engine;
         this.client = engine.client;

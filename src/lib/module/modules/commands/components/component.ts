@@ -23,13 +23,10 @@ import { Message, User } from 'discord.js';
 
 export abstract class CommandComponent<M extends Module> {
 
-    name: string;
-    help: string;
     manager: M;
     host: MultiCommand<M>;
-    permission: number;
 
-    constructor(name: string, help: string, permission: number) {
+    constructor(public name: string, public help: string, public permission: number) {
         this.name = name;
         this.help = help;
         this.permission = permission;

@@ -82,14 +82,13 @@ export type LoggingPrefs = {
 
 export class Logger {
 
-    private opts: LoggingPrefs;
     private defaultPrefs: LoggingPrefs = {
         date: Colors.WHITE,
         pipe: Colors.YELLOW,
         header: Colors.WHITE,
     }
 
-    constructor(opts?: LoggingPrefs) {
+    constructor(public opts?: LoggingPrefs) {
         this.opts = opts 
             ? Object.assign(opts, this.defaultPrefs) 
             : this.defaultPrefs;

@@ -35,36 +35,22 @@ export type PageContent = {
 
 export class PaginatedEmbed {
 
-    title: string;
-    icon: string;
-    pages: PageContent[];
-    timeout: number;
-    thumbnail: string;
-    message: Message;
-    channel: TextChannel;
-    author: User;
     page: number;
+    message: Message;
     collector: ReactionCollector;
     colorGradient: TGInst;
 
-    constructor(channel: TextChannel,
-                author: User,
-                title: string,
-                icon: string,
-                pages: PageContent[],
-                timeout: number = 600000,
-                thumbnail: string = null,
-                beginColor: string = 'black',
-                endColor: string = '#9b59b6') {
-        this.channel = channel;
-        this.author = author;
-        this.title = title;
-        this.icon = icon;
-        this.pages = pages;
-        this.timeout = timeout;
-        this.thumbnail = thumbnail;
-        this.page = 1;
+    constructor(public channel: TextChannel,
+                public author: User,
+                public title: string,
+                public icon: string,
+                public pages: PageContent[],
+                public timeout: number = 600000,
+                public thumbnail: string = null,
+                public beginColor: string = 'black',
+                public endColor: string = '#9b59b6') {
 
+        this.page = 1;
         this.colorGradient = TinyGradient([beginColor, endColor]);
 
         channel
@@ -155,7 +141,7 @@ export class PaginatedEmbed {
         ['➡️', this.lastPage]
     ]);
 
-    private getColor(index) {
+    private getColor(index: number) {
         let val = index / ( this.pages.length - 1);
         return this.colorGradient.rgbAt(val).toHexString();
     }

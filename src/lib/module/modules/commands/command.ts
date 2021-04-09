@@ -20,15 +20,6 @@ import { User, Message, EmbedFieldData } from 'discord.js';
 
 export abstract class Command {
     
-    name: string;
-    help: string;
-    helpTitle: string;
-    helpFields: EmbedFieldData[];
-    permission: number;
-    deleteMessage: boolean;
-    hideFromHelp: boolean;
-    internalOnly: boolean;
-    fcOnly: boolean;
     manager: CommandManager;
 
     /**
@@ -42,21 +33,13 @@ export abstract class Command {
      * @param deleteMessage whether or not to delete the original command message
      * @param hideFromHelp whether or not to hide this command from the help menu
      */
-    constructor(name: string,
-                help: string,
-                helpTitle: string,
-                helpFields: EmbedFieldData[],
-                permission: number,
-                deleteMessage = true,
-                hideFromHelp = false) {
-        this.name = name;
-        this.help = help;
-        this.helpTitle = helpTitle;
-        this.helpFields = helpFields;
-        this.permission = permission;
-        this.deleteMessage = deleteMessage;
-        this.hideFromHelp = hideFromHelp;
-    }
+    constructor(public name: string,
+                public help: string,
+                public helpTitle: string,
+                public helpFields: EmbedFieldData[],
+                public permission: number,
+                public deleteMessage = true,
+                public hideFromHelp = false) {}
 
     /**
      * Command Execution Method
@@ -70,9 +53,6 @@ export abstract class Command {
 }
 
 export class CommandEntry {
-    
-    name: string;
-    command: Command;
 
     /**
      * A wrapped command instance.
@@ -80,10 +60,7 @@ export class CommandEntry {
      * @param name the name of the command
      * @param command the command object
      */
-    constructor(name: string, command: Command) {
-        this.name = name;
-        this.command = command;
-    }
+    constructor(public name: string, public command: Command) {}
 
 }
 
