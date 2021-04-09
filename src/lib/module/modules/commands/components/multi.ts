@@ -16,11 +16,11 @@
  */
 
 import { Module } from '../../../';
+import { bold } from '../../../../util';
 import { CommandComponent } from './component';
 import { IvyEmbedIcons } from '../../../../engine';
 import { Command, CommandReturn } from '../command';
 import { EmbedFieldData, Message, User } from 'discord.js';
-import { bold, generateSimpleEmbed } from '../../../../util';
 
 export abstract class MultiCommand<M extends Module> extends Command {
     
@@ -54,7 +54,7 @@ export abstract class MultiCommand<M extends Module> extends Command {
         }
 
         if (!this.manager.engine.has(user, this.permission, message.guild)) {
-            message.reply(generateSimpleEmbed('Whoops', IvyEmbedIcons.ERROR, `You don't have permission to do this.`));
+            message.reply(this.manager.engine.embeds.build('Whoops', IvyEmbedIcons.ERROR, `You don't have permission to do this.`));
             return CommandReturn.EXIT;
         }
 

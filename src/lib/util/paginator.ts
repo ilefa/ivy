@@ -17,12 +17,13 @@
 
 import TinyGradient from 'tinygradient';
 
-import { generateEmbed } from '.';
+import { IvyEngine } from '../engine';
 import { Instance as TGInst } from 'tinygradient';
 
 import {
     EmbedFieldData,
     Message,
+    MessageReaction,
     ReactionCollector,
     TextChannel,
     User
@@ -40,7 +41,8 @@ export class PaginatedEmbed {
     collector: ReactionCollector;
     colorGradient: TGInst;
 
-    constructor(public channel: TextChannel,
+    constructor(public engine: IvyEngine,
+                public channel: TextChannel,
                 public author: User,
                 public title: string,
                 public icon: string,
@@ -58,21 +60,22 @@ export class PaginatedEmbed {
             .then(msg => this.init(msg));
     }
 
-    static of(channel: TextChannel,
-        author: User,
-        title: string,
-        icon: string,
-        pages: PageContent[],
-        timeout: number = 600000,
-        thumbnail: string = null,
-        beginColor: string = 'black',
-        endColor: string = 'green'): PaginatedEmbed {
-            return new PaginatedEmbed(channel, author, title, icon, pages, timeout, thumbnail, beginColor, endColor);
+    static of(engine: IvyEngine,
+              channel: TextChannel,
+              author: User,
+              title: string,
+              icon: string,
+              pages: PageContent[],
+              timeout: number = 600000,
+              thumbnail: string = null,
+              beginColor: string = 'black',
+              endColor: string = 'green'): PaginatedEmbed {
+        return new PaginatedEmbed(engine, channel, author, title, icon, pages, timeout, thumbnail, beginColor, endColor);
     }
 
     private generatePage(pnum: number) {
         let pind = pnum - 1;
-        return generateEmbed(this.title, this.icon, this.pages[pind]?.description || '', this.pages[pind]?.fields || [])
+        return this.engine.embeds.build(this.title, this.icon, this.pages[pind]?.description || '', this.pages[pind]?.fields || [])
                 .setTimestamp()
                 .setThumbnail(this.thumbnail)
                 .setFooter(`Page ${pnum} of ${this.pages.length}`, this.channel.guild.iconURL())
@@ -81,11 +84,8 @@ export class PaginatedEmbed {
 
     private init(message: Message) {
         this.message = message;
-
-        const filter = (reaction, user) => {
-            if (user.bot) return false;
-            return true;
-        }
+        
+        const filter = (_reaction: MessageReaction, user: User) => !user.bot;
 
         if (this.pages.length === 1) {
             return;
@@ -101,10 +101,8 @@ export class PaginatedEmbed {
             reaction.users.remove(user);
         });
 
-        this.collector.on('end', () => {
-            message.reactions.removeAll();
-        })
-
+        this.collector.on('end', () => message.reactions.removeAll());
+        
         this.functionMap.forEach((_, emote) => {
             message.react(emote);
         });

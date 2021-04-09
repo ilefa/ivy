@@ -26,7 +26,7 @@ export abstract class GenericTestCommand<M extends Module> extends Command imple
     module: M;
 
     constructor(public name: string) {
-        super(name, null, null, [], CUSTOM_PERMS.SUPERMAN);
+        super(name, null, null, [], CUSTOM_PERMS.SUPER_PERMS);
     }
 
     async execute(user: User, message: Message, args: string[]): Promise<CommandReturn> {

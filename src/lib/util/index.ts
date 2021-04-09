@@ -19,25 +19,23 @@ import moment from 'moment';
 import df from 'parse-duration';
 
 import { Units } from 'parse-duration';
+import { EmbedBuilder } from './embed';
 import { PaginatedEmbed } from './paginator';
+
 import {
     Client,
-    EmbedFieldData,
     Emoji,
     Message,
-    MessageEmbed,
     Permissions,
     PermissionFlags,
     User,
     Role,
-    TextChannel
 } from 'discord.js';
 
-export { PaginatedEmbed };
+export { PaginatedEmbed, EmbedBuilder };
 
 export const LOADER = '<a:loading:788890776444207194>';
 export const LOOKING = '<a:looking:807057053713039420>';
-export const FC = '<:FC:786296825115443280>';
 export const JOIN_BUTTON = '<:join:798763992813928469>';
 export const RED_CIRCLE = '<:dnd:808585033991585802>';
 export const YELLOW_CIRCLE = '<:idle:808585033908224010>';
@@ -116,11 +114,9 @@ export const findUser = async (message: Message, input: string, def: User) => {
  * 
  * @param ms millis to sleep
  */
-export const sleep = async ms => {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
-}
+export const sleep = async (ms: number) => new Promise(resolve => {
+    setTimeout(resolve, ms);
+});
 
 /**
  * Creates a message loader and returns it.
@@ -170,11 +166,11 @@ export const replaceAll = (input: string, search: string, replace: string) => {
 }
 
 export interface PermissionAddons extends PermissionFlags {
-    SUPERMAN: number;
+    SUPER_PERMS: number;
 }
 
 export const CUSTOM_PERMS: PermissionAddons = Permissions.FLAGS as PermissionAddons;
-CUSTOM_PERMS.SUPERMAN = 100000
+CUSTOM_PERMS.SUPER_PERMS = 100000
 
 /**
  * Retrieves the formatted duration string
@@ -268,32 +264,12 @@ export const getChangeString = (input: string | number, seperator: string, digit
  * @param downThreshold the threshold for a downwards arrow to appear
  * @param stagnent the threshold for a stagnant arrow to appear
  */
-export const getEmoteForIndicator = (indicator: number | string, upThreshold: number, downThreshold: number, stagnent: number) => {
+export const getArrowEmoteForData = (indicator: number | string, upThreshold: number, downThreshold: number, stagnent: number) => {
     if (indicator === stagnent) return ':arrow_right:';
     if (indicator > upThreshold) return ':arrow_upper_right:';
     if (indicator < downThreshold) return ':arrow_lower_left:';
 
     return ':twisted_rightwards_arrows:';
-}
-
-/**
- * Returns the arrow emote for a given EPS value.
- * @param eps the eps value for a stock
- */
-export const getEmoteForEPS = (eps: number | string) => getEmoteForIndicator(eps, 0, 0, 0);
-
-/**
- * Returns an emote for the XP placement leaderboard.
- * @param placement the xp placement
- */
-export const getEmoteForPlacement = (placement: number) => {
-    if (placement == 1) return ':first_place:';
-    if (placement == 2) return ':second_place:';
-    if (placement == 3) return ':third_place:';
-    if (placement == 10) return ':keycap_ten:';
-    if (placement > 10) return '';
-
-    return `:${toWords(placement)}:`;
 }
 
 /**
@@ -399,131 +375,6 @@ export const sum = <U>(list: U[], apply: (val: U) => number) => {
     return list
         .map(apply)
         .reduce((prev, cur) => cur + prev, 0);
-}
-
-export const addCommandMetadata = (message: Message, embed: MessageEmbed) => {
-    return embed
-        .setFooter(`${message.member.displayName} in #${(message.channel as TextChannel).name}`, message.author.avatarURL())
-        .setTimestamp();
-}
-
-/**
- * Shorthand for generating a simple message embed.
- * 
- * @param title the title of the embed
- * @param icon the embed icon
- * @param message the description for the embed
- */
-export const generateSimpleEmbed = (title: string, icon: string, message: string) => {
-    return new MessageEmbed()
-        .setAuthor(title, icon)
-        .setColor(0x9B59B6)
-        .setDescription(message);
-}
-
-/**
- * Shorthand for generating a simple message embed.
- * 
- * @param title the title of the embed
- * @param icon the embed icon
- * @param message the description for the embed
- * @param image the thumbnail for the embed
- */
-export const generateSimpleEmbedWithThumbnail = (title: string,
-                                                 icon: string,
-                                                 message: string,
-                                                 image: string) => {
-    return generateSimpleEmbed(title, icon, message)
-        .setThumbnail(image);
-}
-
-/**
- * Shorthand for generating a simple message embed.
- * 
- * @param title the title of the embed
- * @param icon the embed icon
- * @param message the description for the embed
- * @param image the thumbnail for the embed
- */
-export const generateSimpleEmbedWithImage = (title: string,
-                                             icon: string,
-                                             message: string,
-                                             image: string) => {
-    return generateSimpleEmbed(title, icon, message)
-        .setImage(image);
-}
-
-/**
- * Shorthand for generating a simple message embed.
- * 
- * @param title the title of the embed
- * @param icon the embed icon
- * @param message the description for the embed
- * @param image the image for the embed
- * @param thumbnail the thumbnail for the embed
- */
-export const generateSimpleEmbedWithImageAndThumbnail = (title: string,
-                                                         icon: string,
-                                                         message: string,
-                                                         image: string,
-                                                         thumbnail: string) => {
-    return generateSimpleEmbed(title, icon, message)
-        .setImage(image)
-        .setThumbnail(thumbnail);
-}
-
-/**
- * Shorthand for generating a complex message embed.
- * 
- * @param title the title of the embed
- * @param icon the embed icon
- * @param message the description for the embed
- * @param fields a list of EmbedFieldData for the embed
- */
-export const generateEmbed = (title: string,
-                              icon: string,
-                              message: string,
-                              fields: EmbedFieldData[]) => {
-    return generateSimpleEmbed(title, icon, message)
-        .addFields(fields);
-}
-
-/**
- * Shorthand for generating a complex message embed.
- * 
- * @param title the title of the embed
- * @param icon the embed icon
- * @param message the description for the embed
- * @param fields a list of EmbedFieldData for the embed
- * @param thumbnail the thumbnail for the embed
- */
-export const generateEmbedWithFieldsAndThumbnail = (title: string,
-                                                    icon: string,
-                                                    message: string,
-                                                    fields: EmbedFieldData[],
-                                                    thumbnail: string) => {
-    return generateSimpleEmbed(title, icon, message)
-        .addFields(fields)
-        .setThumbnail(thumbnail);
-}
-
-/**
- * Shorthand for generating a complex message embed.
- * 
- * @param title the title of the embed
- * @param icon the embed icon
- * @param message the description for the embed
- * @param fields a list of EmbedFieldData for the embed
- * @param image the image for the embed
- */
-export const generateEmbedWithFieldsAndImage = (title: string,
-                                                icon: string,
-                                                message: string,
-                                                fields: EmbedFieldData[],
-                                                image: string) => {
-    return generateSimpleEmbed(title, icon, message)
-        .addFields(fields)
-        .setImage(image);
 }
 
 /**

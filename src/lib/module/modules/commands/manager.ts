@@ -21,8 +21,6 @@ import { IvyEmbedIcons, IvyEngine } from '../../../engine';
 
 import {
     codeBlock,
-    generateEmbed,
-    generateSimpleEmbed,
     numberEnding
 } from '../../../util';
 
@@ -43,7 +41,6 @@ export class CommandManager extends Module {
     
     constructor(public engine: IvyEngine) {
         super('Commands');
-        this.engine = engine;
         this.client = engine.client;
         this.commands = [];
         this.testFlows = [];
@@ -115,17 +112,17 @@ export class CommandManager extends Module {
             if (cmd.name.toLowerCase() === name) {
                 try {
                     if (!this.engine.has(user, cmd.command.permission, message.guild)) {
-                        message.reply(generateSimpleEmbed('Whoops', IvyEmbedIcons.ERROR, `You don't have permission to do this.`));
+                        message.reply(this.engine.embeds.build('Whoops', IvyEmbedIcons.ERROR, `You don't have permission to do this.`));
                         break;
                     }
 
-                    let helpEmbed = generateEmbed(
+                    let helpEmbed = this.engine.embeds.build(
                         cmd.command.helpTitle 
                             ? cmd.command.helpTitle 
                             : `.${cmd.command.name} | Help Menu`, 
                         IvyEmbedIcons.HELP,
                         cmd.command.help,
-                        cmd.command.helpFields);
+                        cmd.command.helpFields, message);
 
                     if ((args.length === 1) && args[0].toLowerCase() === '-h') {
                         if (cmd.command.deleteMessage) {
@@ -149,7 +146,7 @@ export class CommandManager extends Module {
                     break;
                 } catch (e) {                    
                     if (this.engine.opts.reportErrors.includes(message.guild.id)) {
-                        message.reply(generateEmbed('Huh? That wasn\'t supposed to happen..', IvyEmbedIcons.ERROR, `Something went wrong while processing your command.`, [
+                        message.reply(this.engine.embeds.build('Huh? That wasn\'t supposed to happen..', IvyEmbedIcons.ERROR, `Something went wrong while processing your command.`, [
                             {
                                 name: 'Command',
                                 value: codeBlock('', name),
@@ -170,14 +167,14 @@ export class CommandManager extends Module {
                                 value: codeBlock('', e.stack),
                                 inline: false
                             }
-                        ]));
+                        ], message));
 
                         this.engine.logger.except(e, this.name, 'Encountered an exception while processing a command');
                         console.error(e.stack);
                         return;
                     }
 
-                    message.reply(generateSimpleEmbed('Huh? That wasn\'t supposed to happen..', IvyEmbedIcons.ERROR, 'Something went wrong while processing your command.'));
+                    message.reply(this.engine.embeds.build('Huh? That wasn\'t supposed to happen..', IvyEmbedIcons.ERROR, 'Something went wrong while processing your command.', [], message));
                     this.engine.logger.except(e, this.name, 'Encountered an exception while processing a command');
                 }
             }

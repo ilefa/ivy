@@ -24,7 +24,7 @@ import { codeBlock, CUSTOM_PERMS, emboss, timeDiff } from '../../../../util';
 export abstract class TestCommand extends Command implements TestFlow {
 
     constructor(public name: string) {
-        super(name, null, null, [], CUSTOM_PERMS.SUPERMAN);
+        super(name, null, null, [], CUSTOM_PERMS.SUPER_PERMS);
     }
 
     async execute(user: User, message: Message, args: string[]): Promise<CommandReturn> {

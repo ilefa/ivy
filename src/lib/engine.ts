@@ -17,6 +17,7 @@
 
 import { Logger } from './logger';
 import { spawn } from 'child_process';
+import { EmbedBuilder } from './util';
 import { StartupRunnable } from './startup';
 import { GuildDataProvider, GuildTokenLike } from './data';
 
@@ -77,6 +78,7 @@ export abstract class IvyEngine {
     client: Client;
     logger: Logger;
     icons: IvyEmbedIcons;
+    embeds: EmbedBuilder;
     moduleManager: ModuleManager;
     commandManager: CommandManager;
     provider: GuildDataProvider<GuildTokenLike>;
@@ -98,6 +100,7 @@ export abstract class IvyEngine {
             fetchAllMembers: true
         });
 
+        this.embeds = new EmbedBuilder(this);
         this.moduleManager = new ModuleManager(this);
         this.commandManager = new CommandManager(this);
 
