@@ -53,9 +53,7 @@ export default class StonksBot extends IvyEngine {
     }
 
     // Called when everything is up and running
-    onReady(client: Client) {
-        this.logger.info('Stonks', 'All the stonks are going up.');
-    }
+    onReady = (client: Client) => this.logger.info('Stonks', 'All the stonks are going up.');
 
     // You can register all of your commands in one place
     registerCommands() {}

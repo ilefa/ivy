@@ -21,5 +21,4 @@ export * from './lib/logger';
 export * from './lib/stash';
 export * from './lib/module';
 export * from './lib/startup';
-
-export * as util from './lib/util';
+export * from './lib/util';

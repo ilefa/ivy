@@ -32,7 +32,8 @@ import {
     Role,
 } from 'discord.js';
 
-export { PaginatedEmbed, EmbedBuilder };
+export * from './embed';
+export * from './paginator';
 
 export const LOADER = '<a:loading:788890776444207194>';
 export const LOOKING = '<a:looking:807057053713039420>';
