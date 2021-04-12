@@ -1,3 +1,7 @@
+# Directories
+test/
 .vscode/
 node_modules/
+
+# Test Files
 src/test.ts

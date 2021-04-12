@@ -18,7 +18,9 @@
 import { IvyEngine } from '../engine';
 
 import {
+    DMChannel,
     EmbedFieldData,
+    GuildChannel,
     Message,
     MessageEmbed,
     TextChannel
@@ -31,37 +33,36 @@ export class EmbedBuilder {
     /**
      * Builds a stylized embed.
      * 
-     * @param title the title of the embed
-     * @param icon the icon url for the embed
-     * @param message the message body for the embed
-     * @param fields [optional] a list of fields to display
-     * @param metadata [optional] a message object to add metadata from
-     * @param image [optional] an image to display under the embed
+     * @param title     the title of the embed
+     * @param icon      the icon url for the embed
+     * @param message   the message body for the embed
+     * @param fields    [optional] a list of fields to display
+     * @param metadata  [optional] a message object to add metadata from
+     * @param image     [optional] an image to display under the embed
      * @param thumbnail [optional] a thumbnail to display in the embed
      */
-    build = (title: string,
-             icon: string,
-             message: string,
-             fields?: EmbedFieldData[],
-             metadata?: Message,
-             image?: string,
-             thumbnail?: string) => {
-                let embed = new MessageEmbed()
-                    .setAuthor(title, icon)
-                    .setColor(this.engine.opts.color)
-                    .setDescription(message)
-                    .addFields(fields || [])
-                    .setImage(image || undefined)
-                    .setThumbnail(thumbnail || undefined);
+    build = (title: string, icon: string, message: string, fields?: EmbedFieldData[], metadata?: Message, image?: string, thumbnail?: string) => {
+        let embed = new MessageEmbed()
+            .setAuthor(title, icon)
+            .setColor(this.engine.opts.color)
+            .setDescription(message)
+            .addFields(fields || [])
+            .setImage(image || undefined)
+            .setThumbnail(thumbnail || undefined);
 
-                if (metadata) {
-                    embed = embed
-                        .setFooter(`${metadata.member.displayName} in #${(metadata.channel as TextChannel).name}`, metadata.author.avatarURL())
-                        .setTimestamp();
-                }
+        if (metadata) {
+            let channelName = metadata instanceof GuildChannel
+                ? '#' + (metadata as TextChannel).name 
+                : metadata instanceof DMChannel 
+                    ? '@' + (metadata as DMChannel).recipient.username 
+                    : 'unknown';
+            
+            embed = embed
+                .setFooter(`${metadata.member.displayName} in ${channelName}`, metadata.author.avatarURL())
+                .setTimestamp();
+        }
 
-                return embed;
-            }
-        
+        return embed;
+    }
 
 }
