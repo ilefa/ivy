@@ -1,8 +1,8 @@
 # Directories
 test/
-dist/
 .vscode/
 node_modules/
 
-# Test Files
+# Files
 src/test.ts
+README.md
