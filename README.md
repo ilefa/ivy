@@ -7,7 +7,13 @@ Ivy is a TypeScript library that deals with the fundamentals of building a Disco
 Use npm to install Ivy.
 
 ```bash
-npm install ilefa/ivy
+npm install @ilefa/ivy
+```
+
+Since Ivy is currently hosted on GitHub packages, you will need to make a ``.npmrc`` file in the root of your project, and insert the following:
+
+```env
+@ilefa:registry=https://npm.pkg.github.com
 ```
 
 ## Usage
@@ -27,7 +33,7 @@ import {
     IvyEngine,
     Logger,
     StartupRunnable
-} from 'ilefa/ivy';
+} from '@ilefa/ivy';
 
 export default class StonksBot extends IvyEngine {
 
@@ -97,8 +103,7 @@ type CustomGuildToken = GuildTokenLike & {
 
 // Will be executed upon startup - maybe add some flashly watermark or something cool!
 class StartupHandler implements StartupRunnable {
-    run(engine: IvyEngine) {
-        let logger: Logger = new Logger();
+    run = ({ logger }: IvyEngine) => {
         logger.unlisted(`Booting ${logger.wrap(Colors.GREEN, 'Stonks')} version ${logger.wrap(Colors.DIM, '0.1 (master)')}`);
         logger.unlisted(`ILEFA Labs (c) ${moment().format('YYYY')}`);
         logger.unlisted(``);
@@ -116,8 +121,8 @@ new StonksBot();
 | ``name``           | ``string``               | the name of your bot, so it can be referred to in logs, and other internal settings |
 | ``logger``         | ``Logger``               | an ivy logger instance, with customizations if desired                              |
 | ``gitRepo``        | ``string``               | if you would like version tracking (the ability for the bot to know it's current git version/branch), you can enter it's repo name in the following format: ``name/repo``, such as ``ilefa/ivy`` |
-| ``superPerms``     | ``string[]``             | an array of discord snowflakes ids corresponding to users that will have full privileges for the bot, regardless of set permissions in commands |
-| ``reportErrors``   | ``string[]``             | an array of discord snowflakes ids corresponding to servers in which the bot will display verbose information on command errors |
+| ``superPerms``     | ``string[]``             | an array of discord snowflake ids corresponding to users that will have full privileges for the bot, regardless of set permissions in commands |
+| ``reportErrors``   | ``string[]``             | an array of discord snowflake ids corresponding to servers in which the bot will display verbose information on command errors |
 | ``color``          | ``string``               | a color code, either a hex number, or hex string that will be respected by embeds and other elements created by ivy utilities |
 | ``provider``       | [GuildDataProvider<T>](src/lib/data/provider.ts)         | an ivy guild data provider instance, which will allow ivy to save and load guild data of your choosing for internal systems |
 | ``startup``        | [StartupRunnable](src/lib/startup.ts)                    | an instance of a runnable that will be called upon startup; feel free to place watermarks or other cool things the bot will display or do on startup |
@@ -133,7 +138,7 @@ and define a type that will specify what the data per-guild will look like.
 
 Let's suppose that a guild has to store information as to where certain logs should be sent - that would look something like this:
 ```ts
-import { GuildDataProvider } from 'ilefa/ivy';
+import { GuildDataProvider } from '@ilefa/ivy';
 
 export type CustomGuildToken = GuildTokenLike & {
     logChannel: string; // let's store the channel ID as a string
@@ -163,13 +168,21 @@ export default class DataProvider extends GuildDataProvider<CustomGuildToken> {
 ```
 
 Additionally, you can use the included ``CachedGuildDataProvider`` to cache the results of guild tokens if you have a Redis database handy.
-The implementation of the cached provider is quite similar as the default provider:
+The implementation of the cached provider is quite similar to the default provider:
 
 ```ts
-import { CachedGuildDataProvider } from 'ilefa/ivy';
+import { CachedGuildDataProvider } from '@ilefa/ivy';
 
 // We will be utilizing the same CustomGuildToken as the previous example - so that's where this type comes from.
 export default class DataProvider extends CachedGuildDataProvider<CustomGuildToken> {
+
+    constructor() {
+        super({
+            redis: {
+                host: '127.0.0.1'
+            }
+        })
+    }
 
     // Once load() is called, it will call fetch() in case the data is not available in the cache.
     async fetch(guild: Guild): Promise<CustomGuildToken> {
