@@ -8,6 +8,7 @@
         "target": "es5",
         "module": "commonjs",
         "moduleResolution": "node",
+        "skipLibCheck": true,
         "declaration": true,
         "outDir": "dist",
         "esModuleInterop": true,
@@ -17,7 +18,9 @@
         "sourceMap": true,
     },
     "exclude": [
-        "node_modules",
-        "dist"
+        "./node_modules",
+        "./dist",
+        "./test/",
+        "**/*.test.ts"
     ]
 }

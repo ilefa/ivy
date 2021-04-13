@@ -4,5 +4,5 @@ test/
 node_modules/
 
 # Files
-src/test.ts
+*.test.ts
 README.md

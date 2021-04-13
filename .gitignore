@@ -5,4 +5,4 @@ dist/
 node_modules/
 
 # Test Files
-src/test.ts
+*.test.ts
