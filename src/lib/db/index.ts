@@ -15,11 +15,5 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from './lib/data';
-export * from './lib/db';
-export * from './lib/engine';
-export * from './lib/logger';
-export * from './lib/stash';
-export * from './lib/module';
-export * from './lib/startup';
-export * from './lib/util';
+export * from './store';
+export * from './providers';

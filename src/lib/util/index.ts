@@ -19,8 +19,6 @@ import moment from 'moment';
 import df from 'parse-duration';
 
 import { Units } from 'parse-duration';
-import { EmbedBuilder } from './embed';
-import { PaginatedEmbed } from './paginator';
 
 import {
     Client,
@@ -34,6 +32,7 @@ import {
 
 export * from './embed';
 export * from './paginator';
+export * from './redis';
 
 export const LOADER = '<a:loading:788890776444207194>';
 export const LOOKING = '<a:looking:807057053713039420>';
