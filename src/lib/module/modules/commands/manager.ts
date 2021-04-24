@@ -17,12 +17,8 @@
 
 import { Module } from '../../module';
 import { User, Message, Client } from 'discord.js';
+import { codeBlock, numberEnding } from '../../../util';
 import { IvyEmbedIcons, IvyEngine } from '../../../engine';
-
-import {
-    codeBlock,
-    numberEnding
-} from '../../../util';
 
 import {
     Command,
@@ -170,7 +166,7 @@ export class CommandManager extends Module {
                         ], message));
 
                         this.engine.logger.except(e, this.name, 'Encountered an exception while processing a command');
-                        console.error(e.stack);
+                        this.engine.logger.unlisted(e.stack);
                         return;
                     }
 

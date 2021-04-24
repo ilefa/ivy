@@ -50,7 +50,7 @@ export class PaginatedEmbed {
                 public timeout: number = 600000,
                 public thumbnail: string = null,
                 public beginColor: string = 'black',
-                public endColor: string = '#9b59b6') {
+                public endColor: string = engine.opts.color.toString()) {
 
         this.page = 1;
         this.colorGradient = TinyGradient([beginColor, endColor]);
@@ -69,8 +69,42 @@ export class PaginatedEmbed {
               timeout: number = 600000,
               thumbnail: string = null,
               beginColor: string = 'black',
-              endColor: string = 'green'): PaginatedEmbed {
+              endColor: string = engine.opts.color.toString()): PaginatedEmbed {
         return new PaginatedEmbed(engine, channel, author, title, icon, pages, timeout, thumbnail, beginColor, endColor);
+    }
+
+    static ofItems<T>(engine: IvyEngine,
+                      channel: TextChannel,
+                      author: User,
+                      title: string,
+                      icon: string,
+                      items: T[],
+                      perPage: number,
+                      transform: (itemsOnPage: T[]) => PageContent,
+                      timeout: number = 600000,
+                      thumbnail: string = null,
+                      beginColor: string = 'black',
+                      endColor: string = engine.opts.color.toString()) {
+
+        let total = Math.ceil(items.length / perPage);
+
+        let paginate = (items: T[], page: number, result: PageContent[]): PageContent[] => {
+            if (page > total) {
+                return result;
+            }
+
+            let offset = (page - 1) * perPage;
+            let record = transform(items
+                    .slice(offset)
+                    .slice(0, perPage));
+
+            result.push(record);
+            return paginate(items, page + 1, result);
+        };
+
+        return new PaginatedEmbed(engine, channel, author,
+                                  title, icon, paginate(items, 1, []),
+                                  timeout, thumbnail, beginColor, endColor);
     }
 
     private generatePage(pnum: number) {

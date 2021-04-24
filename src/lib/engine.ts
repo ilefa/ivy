@@ -95,6 +95,7 @@ export abstract class IvyEngine {
             this.vcsEnabled = false;
         }
 
+        this.opts.startup?.run(this);
         this.client = new Client(opts.discord || {
             partials: ['CHANNEL', 'MESSAGE', 'REACTION'],
             fetchAllMembers: true
@@ -103,14 +104,13 @@ export abstract class IvyEngine {
         this.embeds = new EmbedBuilder(this);
         this.moduleManager = new ModuleManager(this);
         this.commandManager = new CommandManager(this);
-
+        
         this.moduleManager.registerModule(opts.eventHandler || new DefaultEventManager(this));
 
         this.registerCommands();
         this.registerFlows();
         this.registerModules();
 
-        this.opts.startup?.run(this);
         this.moduleManager.init();
 
         this.client.login(opts.token);
@@ -152,6 +152,12 @@ export abstract class IvyEngine {
     registerModule = (module: Module) => this.moduleManager.registerModule(module);
 
     /**
+     * Unregisters a module.
+     * @param module the module instance
+     */
+    unregisterModule = (module: Module) => this.moduleManager.unregisterModule(module);
+
+    /**
      * Registers a flow.
      * @param flow the flow to register
      */
@@ -164,6 +170,21 @@ export abstract class IvyEngine {
      * @param module the manager for this flow
      */
     registerManagedFlow = <T extends Module>(flow: GenericTestCommand<T>, module: T) => this.commandManager.registerGenericTestFlow(flow, module);
+
+    /**
+     * Registers a custom event handler.
+     * @param manager the event manager to register
+     */
+    registerEventHandler = <T extends EventManager>(manager: T) => {
+        let handler = this.opts.eventHandler;
+        let registered = this.moduleManager.require<EventManager>('Events');
+        if (!handler && (registered && registered instanceof DefaultEventManager)) {
+            this.unregisterModule(registered);
+        }
+
+        this.registerModule(manager);
+        this.opts.eventHandler = manager;
+    }
 
     /**
      * Returns whether or not a given user has

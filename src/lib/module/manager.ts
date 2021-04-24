@@ -35,12 +35,30 @@ export class ModuleManager {
      * @param module the module
      */
     async registerModule(module: Module) {
+        if (this.modules.some(m => m.name.toLowerCase() === module.name.toLowerCase())) {
+            throw new Error(`Ambigious module name '${module.name}'!`);
+        }
+
         module.client = this.client;
         module.manager = this;
     
         this.modules.push(module);
         await module.start();
     }
+
+    unregisterModule = async (module: Module) => {
+        if (!this.modules.includes(module) || !this.modules.some(m => m.name.toLowerCase() === module.name.toLowerCase())) {
+            throw new Error(`Module '${module.name}' is not registered.`);
+        }
+
+        await module.end();
+        this.modules = this.modules.filter(m => m !== module);
+    }
+
+    require = <T extends Module>(name: string) => 
+        this
+            .modules
+            .find(module => module.name.toLowerCase() === name.toLowerCase()) as T;
 
     init() {
         this.engine.logger.info('Modules', `Loaded & Enabled ${this.modules.length} module${numberEnding(this.modules.length)}.`);

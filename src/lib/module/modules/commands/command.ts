@@ -15,11 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Logger } from '../../../logger';
 import { CommandManager } from './manager';
+import { IvyEngine } from '../../../engine';
+import { EmbedBuilder } from '../../../util';
 import { User, Message, EmbedFieldData } from 'discord.js';
 
 export abstract class Command {
     
+    engine: IvyEngine;
+    embeds: EmbedBuilder;
+    logger: Logger;
     manager: CommandManager;
 
     /**
@@ -39,7 +45,11 @@ export abstract class Command {
                 public helpFields: EmbedFieldData[],
                 public permission: number,
                 public deleteMessage = true,
-                public hideFromHelp = false) {}
+                public hideFromHelp = false) {
+        this.engine = this.manager.engine;
+        this.embeds = this.engine.embeds;
+        this.logger = this.engine.logger;              
+    }
 
     /**
      * Command Execution Method

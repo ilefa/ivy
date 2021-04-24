@@ -169,8 +169,8 @@ export interface PermissionAddons extends PermissionFlags {
     SUPER_PERMS: number;
 }
 
-export const CUSTOM_PERMS: PermissionAddons = Permissions.FLAGS as PermissionAddons;
-CUSTOM_PERMS.SUPER_PERMS = 100000
+export const CustomPermissions: PermissionAddons = Permissions.FLAGS as PermissionAddons;
+CustomPermissions.SUPER_PERMS = 100000
 
 /**
  * Retrieves the formatted duration string

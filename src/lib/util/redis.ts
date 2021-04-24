@@ -17,8 +17,8 @@
 
 import Redis from 'redis';
 
-import { RedisClient } from 'redis';
 import { promisify } from 'util';
+import { RedisClient } from 'redis';
 
 export type RedisConnection = {
     host?: string;
