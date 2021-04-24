@@ -1,6 +1,6 @@
 {
   "name": "@ilefa/ivy",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "ILEFA Labs",
   "license": "GPL-3.0",
   "description": "Specially crafted Discord.js wrapper",
@@ -24,7 +24,6 @@
     "axios": "^0.21.1",
     "discord.js": "^12.5.1",
     "moment": "^2.29.1",
-    "mongoose": "^5.12.4",
     "parse-duration": "^0.4.4",
     "redis": "^3.0.2",
     "tinygradient": "^1.1.3"
