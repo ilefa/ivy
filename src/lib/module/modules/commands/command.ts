@@ -46,9 +46,12 @@ export abstract class Command {
                 public permission: number,
                 public deleteMessage = true,
                 public hideFromHelp = false) {
+    }
+
+    start() {
         this.engine = this.manager.engine;
         this.embeds = this.engine.embeds;
-        this.logger = this.engine.logger;              
+        this.logger = this.engine.logger;
     }
 
     /**

@@ -50,6 +50,7 @@ export class CommandManager extends Module {
      */
     registerCommand(name: string, command: Command) {
         command.manager = this;
+        command.start();
         this.commands.push(new CommandEntry(name, command));
     }
 
@@ -60,6 +61,7 @@ export class CommandManager extends Module {
      */
     registerTestFlow(flow: TestCommand) {
         flow.manager = this;
+        flow.start();
         this.testFlows.push(new TestCommandEntry(flow.name, flow));
     }
 
@@ -71,6 +73,7 @@ export class CommandManager extends Module {
     registerGenericTestFlow<M extends Module>(flow: GenericTestCommand<M>, module: M) {
         flow.manager = this;
         flow.module = module;
+        flow.start();
         this.testFlows.push(new TestCommandEntry(flow.name, flow));
     }
 
