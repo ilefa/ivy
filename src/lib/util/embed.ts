@@ -51,10 +51,11 @@ export class EmbedBuilder {
             .setThumbnail(thumbnail || undefined);
 
         if (metadata) {
-            let channelName = metadata instanceof GuildChannel
-                ? '#' + (metadata as TextChannel).name 
-                : metadata instanceof DMChannel 
-                    ? '@' + (metadata as DMChannel).recipient.username 
+            let channel = metadata.channel;
+            let channelName = channel instanceof GuildChannel
+                ? '#' + (channel as TextChannel).name 
+                : channel instanceof DMChannel 
+                    ? '@' + (channel as DMChannel).recipient.username 
                     : 'unknown';
             
             embed = embed
