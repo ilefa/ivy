@@ -52,7 +52,7 @@ export class ModuleManager {
         }
 
         await module.end();
-        this.modules = this.modules.filter(m => m !== module);
+        this.modules = this.modules.filter(m => m.name.toLowerCase() !== module.name.toLowerCase());
     }
 
     require = <T extends Module>(name: string) => 
