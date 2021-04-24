@@ -34,7 +34,7 @@ export class ModuleManager {
      * Registers a module into the manager.
      * @param module the module
      */
-    async registerModule(module: Module) {
+    registerModule = (module: Module) => {
         if (this.modules.some(m => m.name.toLowerCase() === module.name.toLowerCase())) {
             throw new Error(`Ambigious module name '${module.name}'!`);
         }
@@ -43,15 +43,15 @@ export class ModuleManager {
         module.manager = this;
     
         this.modules.push(module);
-        await module.start();
+        module.start();
     }
 
-    unregisterModule = async (module: Module) => {
+    unregisterModule = (module: Module) => {
         if (!this.modules.includes(module) || !this.modules.some(m => m.name.toLowerCase() === module.name.toLowerCase())) {
             throw new Error(`Module '${module.name}' is not registered.`);
         }
 
-        await module.end();
+        module.end();
         this.modules = this.modules.filter(m => m.name.toLowerCase() !== module.name.toLowerCase());
     }
 
@@ -60,9 +60,7 @@ export class ModuleManager {
             .modules
             .find(module => module.name.toLowerCase() === name.toLowerCase()) as T;
 
-    init() {
-        this.engine.logger.info('Modules', `Loaded & Enabled ${this.modules.length} module${numberEnding(this.modules.length)}.`);
-    }
+    init = () => this.engine.logger.info('Modules', `Loaded & Enabled ${this.modules.length} module${numberEnding(this.modules.length)}.`);
 
     disable() {
         this.modules.forEach(module => module.end());
