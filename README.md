@@ -52,14 +52,16 @@ export default class StonksBot extends IvyEngine {
             color: 0xFF9800,                    // a hex code that should be used for embed coloring and such (0x<hex-code>)
             provider: new DataProvider(),       // the guild data provider for this bot
             startup: new StartupHandler(),      // an optional instance of a runnable which is called on startup
-            // eventHandler: new SomeHandler(), // an optional instance of an event handler that should be used
             // presence: { .. },                // a discord.js presence object, where you can specify status and rich presence
             // discord: { .. }                  // a discord.js client options object, where you can specify connection options
         });
     }
 
     // Called when everything is up and running
-    onReady = (client: Client) => this.logger.info('Stonks', 'All the stonks are going up.');
+    onReady = (client: Client) => {
+        // If you have a custom event handler, register it here using IvyEngine#registerEventHandler()
+        this.registerEventHandler(new CustomEventHandler(this, ...));
+    }
 
     // You can register all of your commands in one place
     registerCommands() {}
@@ -126,7 +128,6 @@ new StonksBot();
 | ``color``          | ``string``               | a color code, either a hex number, or hex string that will be respected by embeds and other elements created by ivy utilities |
 | ``provider``       | [GuildDataProvider<T>](src/lib/data/provider.ts)         | an ivy guild data provider instance, which will allow ivy to save and load guild data of your choosing for internal systems |
 | ``startup``        | [StartupRunnable](src/lib/startup.ts)                    | an instance of a runnable that will be called upon startup; feel free to place watermarks or other cool things the bot will display or do on startup |
-| ``eventHandler``   | [EventHandler](src/lib/module/modules/events.ts)         | an instance of an event handler that will process events for the bot, such as messages, reactions, and errors |
 | ``presence``       | [PresenceData](https://discord.js.org/#/docs/main/stable/typedef/PresenceData)    | presence (status) information for the bot to respect                          |
 | ``discord``        | [ClientOptions](https://discord.js.org/#/docs/main/stable/typedef/ClientOptions)  | custom discord api client options, such as sharding, privileged intents, etc. |  
 
@@ -207,6 +208,71 @@ export default class DataProvider extends CachedGuildDataProvider<CustomGuildTok
 
 }
 ```
+
+## Pagination
+Ivy comes with a powerful built-in pagination utility, which allows you to created paginated embeds.
+This allows rich data to be displayed across multiple pages of embeds, and has a very intuitive implementation.
+
+### Automatic page generation
+If you have an array of objects, and wish to paginate them this is probably the way to go for you.
+Below is a simple example of how to achieve this:
+
+```ts
+import { link, PageContent, PaginatedEmbed } from '@ilefa/ivy';
+
+let items: T[] = ...;
+
+// You will want to create a transform method which will convert a list of items into a page:
+const transform = (items: T[]) => PageContent {
+
+    // Items will be a list of items that will displayed on the page,
+    // so for example, if you have a list of songs, and want to display
+    // them on different embed pages, you would do something like this:
+    return {
+        description: '',
+        fields: [
+            items.map(song => {
+                return {
+                    name: `${song.name} (${song.duration})`,
+                    value: `${link('Link', song.link)} - Created by ${song.author}`,
+                    inline: false
+                }
+            })
+        ]
+    }
+
+    // What this does, is on each page, it would display fields
+    // containing N songs on said page with their name, duration, and author. 
+}
+
+PaginatedEmbed.ofItems<T>(
+    engine, author, 'Title',
+    'www.example.com/icon.png',
+    items, 10, transform
+);
+```
+
+### Manually defining pages
+The process is almost the same for manually defining pages with the paginator, but instead of
+passing in an array of items, how many items should be per-page, and a transformer function,
+you would do something along these lines:
+
+```ts
+import { PaginatedEmbed } from '@ilefa/ivy';
+
+let pages: PageContent[] = ...;
+
+PaginatedEmbed.of(
+    engine, author, 'Title',
+    'www.example.com/icon.png',
+    pages
+);
+```
+
+Please note that you are fully in control of what is on the pages, and will need to deal with
+how many items are per-page, how they are rendered, and everything like that. However, if you
+are simply making static pages, and don't need to automated approach, this will work far better
+for you.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
