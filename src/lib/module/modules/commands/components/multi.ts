@@ -18,7 +18,6 @@
 import { Module } from '../../../';
 import { bold } from '../../../../util';
 import { CommandComponent } from './component';
-import { IvyEmbedIcons } from '../../../../engine';
 import { Command, CommandReturn } from '../command';
 import { EmbedFieldData, Message, User } from 'discord.js';
 
@@ -29,7 +28,7 @@ export abstract class MultiCommand<M extends Module> extends Command {
     constructor(public base: string,
                 public basePermission: number,
                 public baseManager: M,
-                public baseHelp: string = 'Invalid usage, please reference the command list below.') {
+                public baseHelp: string = 'Invalid usage, available subcommands are listed below.') {
         super(base, baseHelp, null, [], basePermission);
 
         this.base = base;
@@ -54,7 +53,7 @@ export abstract class MultiCommand<M extends Module> extends Command {
         }
 
         if (!this.manager.engine.has(user, this.permission, message.guild)) {
-            message.reply(this.manager.engine.embeds.build('Whoops', IvyEmbedIcons.ERROR, `You don't have permission to do this.`));
+            message.reply(this.engine.opts.commandMessages.permission(user, message, this));
             return CommandReturn.EXIT;
         }
 

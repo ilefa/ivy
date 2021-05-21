@@ -16,8 +16,8 @@
  */
 
 import { Module } from '../../module';
+import { numberEnding } from '../../../util';
 import { User, Message, Client } from 'discord.js';
-import { codeBlock, numberEnding } from '../../../util';
 import { IvyEmbedIcons, IvyEngine } from '../../../engine';
 
 import {
@@ -111,7 +111,7 @@ export class CommandManager extends Module {
             if (cmd.name.toLowerCase() === name) {
                 try {
                     if (!this.engine.has(user, cmd.command.permission, message.guild)) {
-                        message.reply(this.engine.embeds.build('Whoops', IvyEmbedIcons.ERROR, `You don't have permission to do this.`));
+                        message.reply(this.engine.opts.commandMessages.permission(user, message, cmd.command));
                         break;
                     }
 
@@ -145,35 +145,13 @@ export class CommandManager extends Module {
                     break;
                 } catch (e) {                    
                     if (this.engine.opts.reportErrors.includes(message.guild.id)) {
-                        message.reply(this.engine.embeds.build('Huh? That wasn\'t supposed to happen..', IvyEmbedIcons.ERROR, `Something went wrong while processing your command.`, [
-                            {
-                                name: 'Command',
-                                value: codeBlock('', name),
-                                inline: true
-                            },
-                            {
-                                name: 'Arguments',
-                                value: codeBlock('json', JSON.stringify(args)),
-                                inline: true
-                            },
-                            {
-                                name: 'Error',
-                                value: codeBlock('', e.message),
-                                inline: false
-                            },
-                            {
-                                name: 'Stacktrace',
-                                value: codeBlock('', e.stack),
-                                inline: false
-                            }
-                        ], message));
-
+                        message.reply(this.engine.opts.commandMessages.commandErrorVerbose(user, message, name, args, e));
                         this.engine.logger.except(e, this.name, 'Encountered an exception while processing a command');
                         this.engine.logger.unlisted(e.stack);
                         return;
                     }
 
-                    message.reply(this.engine.embeds.build('Huh? That wasn\'t supposed to happen..', IvyEmbedIcons.ERROR, 'Something went wrong while processing your command.', [], message));
+                    message.reply(this.engine.opts.commandMessages.commandError(user, message, name, args));
                     this.engine.logger.except(e, this.name, 'Encountered an exception while processing a command');
                 }
             }

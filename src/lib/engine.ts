@@ -17,7 +17,7 @@
 
 import { Logger } from './logger';
 import { spawn } from 'child_process';
-import { EmbedBuilder } from './util';
+import { codeBlock, EmbedBuilder } from './util';
 import { StartupRunnable } from './startup';
 import { GuildDataProvider, GuildTokenLike } from './data';
 
@@ -26,6 +26,9 @@ import {
     ClientOptions,
     ColorResolvable,
     Guild,
+    Message,
+    MessageEmbed,
+    MessageResolvable,
     PresenceData,
     User
 } from 'discord.js';
@@ -50,10 +53,18 @@ export type IvyEngineOptions = {
     reportErrors: string[];
     color: ColorResolvable;
     provider: GuildDataProvider<GuildTokenLike>;
+    commandMessages?: IvyCommandMessages;
     startup?: StartupRunnable;
     eventHandler?: EventManager;
     presence?: PresenceData;
     discord?: ClientOptions;
+}
+
+// TODO: MultiCommand help menu generation
+export type IvyCommandMessages = {
+    permission: (user: User, message: Message, command: Command) => MessageEmbed | string;
+    commandError: (user: User, message: Message, name: string, args: string[]) => MessageEmbed | string;
+    commandErrorVerbose: (user: User, message: Message, name: string, args: string[], error: Error) => MessageEmbed | string;
 }
 
 export enum IvyEmbedIcons {
@@ -87,6 +98,7 @@ export abstract class IvyEngine {
     private GIT_REPO_PATTERN = /\w+\/\w+/;
     private vcsEnabled: boolean;
 
+
     constructor(public opts: IvyEngineOptions) {
         this.start = Date.now();
         this.logger = opts.logger;
@@ -100,6 +112,36 @@ export abstract class IvyEngine {
             partials: ['CHANNEL', 'MESSAGE', 'REACTION'],
             fetchAllMembers: true
         });
+
+        const DEFAULT_COMMAND_MESSAGES: IvyCommandMessages = {
+            permission: (_user, _message, _command) => this.embeds.build('Whoops', IvyEmbedIcons.ERROR, `You don't have permission to do this.`),
+            commandError: (_user, message, _name, _args) => this.embeds.build('Huh? That wasn\'t supposed to happen..', IvyEmbedIcons.ERROR, 'Something went wrong while processing your command.', [], message),
+            commandErrorVerbose: (_user, message, name, args, error) => this.embeds.build('Huh? That wasn\'t supposed to happen..', IvyEmbedIcons.ERROR, `Something went wrong while processing your command.`, [
+                {
+                    name: 'Command',
+                    value: codeBlock('', name),
+                    inline: true
+                },
+                {
+                    name: 'Arguments',
+                    value: codeBlock('json', JSON.stringify(args)),
+                    inline: true
+                },
+                {
+                    name: 'Error',
+                    value: codeBlock('', error.message),
+                    inline: false
+                },
+                {
+                    name: 'Stacktrace',
+                    value: codeBlock('', error.stack),
+                    inline: false
+                }
+            ], message)
+        }
+
+        if (!this.opts.commandMessages)
+            this.opts.commandMessages = DEFAULT_COMMAND_MESSAGES;
 
         this.embeds = new EmbedBuilder(this);
         this.moduleManager = new ModuleManager(this);

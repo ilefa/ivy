@@ -18,6 +18,7 @@
 import moment from 'moment';
 import df from 'parse-duration';
 
+import { Readable } from 'stream';
 import { Units } from 'parse-duration';
 
 import {
@@ -28,10 +29,14 @@ import {
     PermissionFlags,
     User,
     Role,
+    StreamOptions,
+    VoiceChannel,
+    VoiceBroadcast,
 } from 'discord.js';
 
 export * from './embed';
 export * from './paginator';
+export * from './recharge';
 export * from './redis';
 
 export const LOADER = '<a:loading:788890776444207194>';
@@ -40,6 +45,7 @@ export const JOIN_BUTTON = '<:join:798763992813928469>';
 export const RED_CIRCLE = '<:dnd:808585033991585802>';
 export const YELLOW_CIRCLE = '<:idle:808585033908224010>';
 export const GREEN_CIRCLE = '<:online:808585033899966464>';
+export const BLUE_CIRCLE = '<:blue:836447279782297640>';
 export const GRAY_CIRCLE = '<:offline:808585033890791424>';
 
 export const SNOWFLAKE_REGEX = /^\d{18,}$/;
@@ -48,12 +54,21 @@ export const USER_MENTION_REGEX = /^<@\!\d{18,}>$/;
 
 export const URL_REGEX = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/;
 
+export type VoiceConnectionPrefs = {
+    source: VoiceBroadcast | Readable | string;
+    stream: StreamOptions;
+    volume?: number;
+    onConnect?: (channel: VoiceChannel) => void;
+    onFinish?: (channel: VoiceChannel) => void;
+    onError?: (channel: VoiceChannel, err: Error) => void;
+}
+
 export type MessageLoader = {
     message: Message;
     start: number;
 }
 
-export const DAY_MILLIS = 86400000;
+export const DAY_MILLIS = 864e5;
 export const bold = (message: any) => `**${message}**`;
 export const italic = (message: any) => `*${message}*`;
 export const emboss = (message: any) => `\`\`${message}\`\``;
@@ -107,6 +122,51 @@ export const findUser = async (message: Message, input: string, def: User) => {
 
     return target;
 }
+
+export const DEFAULT_STREAM_OPTS: StreamOptions = {
+    type: 'opus',
+    volume: 1
+}
+
+/**
+ * Attempts to join a voice channel and stream
+ * the specified data according to the preferences
+ * object supplied to this function.
+ * 
+ * @param channel the voice channel to join
+ * @param prefs preferences for the audio stream
+ */
+export const streamAudio = (channel: VoiceChannel, prefs: VoiceConnectionPrefs) =>
+    channel
+        .join()
+        .then(async connection => {
+            if (prefs.onConnect)
+                prefs.onConnect(channel);
+
+            let dispatcher = connection.play(prefs.source, prefs.stream);
+            
+            dispatcher.on('finish', () => {
+                if (!prefs.onFinish) 
+                    return channel.leave();
+                
+                prefs.onFinish(channel);
+            });
+
+            dispatcher.on('error', err => {
+                if (!prefs.onError)
+                    return console.error(err);
+                
+                prefs.onError(channel, err);
+            });
+        })
+        .catch(err => {
+            if (!prefs.onError) {
+                console.error(err);
+                return channel.leave();
+            }
+
+            prefs.onError(channel, err);
+        });
 
 /**
  * Blocks all I/O for the
