@@ -66,6 +66,11 @@ export const USER_MENTION_REGEX = /^<@\!\d{18,}>$/;
 
 export const URL_REGEX = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/;
 
+export type GenericPredicate<T> = (elem: T, index: number) => boolean;
+export type GenericReducer<T> = (prev: T, current: T, index: number) => T;
+export type GenericSorter<T> = (a: T, b: T) => number;
+export type GenericTransformer<T> = (elem: T, index: number) => T;
+
 export const DEFAULT_STREAM_OPTS: StreamOptions = {
     type: 'opus',
     volume: 1
@@ -254,11 +259,11 @@ export const findUser = async (message: Message, input: string, def: User) => {
     if (input) {
         let client = input;
         let temp = null;
-        if (SNOWFLAKE_REGEX.test(client)) {
+        if (conforms(SNOWFLAKE_REGEX, client)) {
             temp = await message.client.users.fetch(client);
         }
 
-        if (USER_MENTION_REGEX.test(client)) {
+        if (conforms(USER_MENTION_REGEX, client)) {
             let id = client.slice(3, client.length - 1);
             temp = await message.client.users.fetch(id);
         }
@@ -590,7 +595,7 @@ export const sum = <U>(list: U[], apply: (val: U) => number) => {
  */
 export const getExpDate = (input: string): Date => {
     // checks if its MM/DD without year
-    if (/^\d{1,2}\/\d{1,2}$/.test(input)) {
+    if (conforms(/^\d{1,2}\/\d{1,2}$/, input)) {
         input += '/' + moment(Date.now()).format('YYYY');
     }
 
