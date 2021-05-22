@@ -24,21 +24,31 @@ import { Units } from 'parse-duration';
 import {
     Client,
     Emoji,
+    GuildResolvable,
+    Guild,
+    GuildMember,
+    Invite,
     Message,
     Permissions,
     PermissionFlags,
-    User,
     Role,
     StreamOptions,
+    User,
+    UserResolvable,
     VoiceChannel,
     VoiceBroadcast,
+    VoiceState,
+    GuildEmoji,
+    GuildChannel,
 } from 'discord.js';
 
 export * from './embed';
 export * from './paginator';
+export * from './queue';
 export * from './recharge';
 export * from './redis';
 
+export const DAY_MILLIS = 864e5;
 export const LOADER = '<a:loading:788890776444207194>';
 export const LOOKING = '<a:looking:807057053713039420>';
 export const JOIN_BUTTON = '<:join:798763992813928469>';
@@ -54,6 +64,11 @@ export const USER_MENTION_REGEX = /^<@\!\d{18,}>$/;
 
 export const URL_REGEX = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/;
 
+export const DEFAULT_STREAM_OPTS: StreamOptions = {
+    type: 'opus',
+    volume: 1
+}
+
 export type VoiceConnectionPrefs = {
     source: VoiceBroadcast | Readable | string;
     stream: StreamOptions;
@@ -63,12 +78,21 @@ export type VoiceConnectionPrefs = {
     onError?: (channel: VoiceChannel, err: Error) => void;
 }
 
+export enum VoiceStateChange {
+    CONNECT = 'connect',
+    DISCONNECT = 'disconnect',
+    DEAF = 'deaf',
+    MUTE = 'mute',
+    UNDEAF = 'undeaf',
+    UNMUTE = 'unmute',
+    UNKNOWN = 'unknown'
+}
+
 export type MessageLoader = {
     message: Message;
     start: number;
 }
 
-export const DAY_MILLIS = 864e5;
 export const bold = (message: any) => `**${message}**`;
 export const italic = (message: any) => `*${message}*`;
 export const emboss = (message: any) => `\`\`${message}\`\``;
@@ -85,11 +109,85 @@ export const mentionChannel = (id: string) => `<#${id}>`;
 export const mentionRole = (role: Role | string) => `<@&${role instanceof Role ? role.id : role}>`;
 export const getDuration = (input: string) => df(input, 's');
 export const getDurationWithUnit = (input: string, unit: Units) => df(input, unit);
+export const time = (time: number, format: string = 'MMMM Do YYYY, h:mm:ss a') => moment(time).format(format);
 export const capitalizeFirst = (input: string) => input
     .split(' ')
     .map(str => str.charAt(0).toUpperCase() + str.slice(1))
     .join('');
 
+/**
+ * Attempts to convert a guild or user resolvable
+ * object into a guild or user id, depending on which
+ * is provided.
+ * 
+ * @param resolvable either a guild or user resolvable object
+ */
+export const resolvableToId = (resolvable: UserResolvable | GuildResolvable) => {
+    if (resolvable instanceof String)
+        return resolvable.toString();
+
+    if (resolvable instanceof Guild
+            || resolvable instanceof GuildMember
+            || resolvable instanceof User)
+        return resolvable.id;
+
+    if (resolvable instanceof Invite
+            || resolvable instanceof Message
+            || resolvable instanceof GuildChannel
+            || resolvable instanceof GuildEmoji
+            || resolvable instanceof Role)
+        return resolvable.guild.id;
+
+    return null;
+}
+
+/**
+ * Attempts to determine the change
+ * in two voice states and return
+ * an enum constant representing it.
+ * 
+ * @param a the previous voice state
+ * @param b the current voice state
+ */
+export const determineVoiceStateChange = (a: VoiceState, b: VoiceState) => {
+    if (!a.channel && b.channel) return VoiceStateChange.CONNECT;
+    if (a.channel && !b.channel) return VoiceStateChange.DISCONNECT;
+    if (!a.deaf && b.deaf)       return VoiceStateChange.DEAF;
+    if (!a.mute && b.mute)       return VoiceStateChange.MUTE;
+    if (a.deaf && !b.deaf)       return VoiceStateChange.UNDEAF;
+    if (a.mute && !b.mute)       return VoiceStateChange.UNMUTE;
+
+    return VoiceStateChange.UNKNOWN;
+}
+
+/**
+ * Returns whether or not there is a user
+ * alone in a given voice channel.
+ * 
+ * @param source the source channel or state
+ */
+export const isAloneInVC = (source: VoiceState | VoiceChannel) => {
+    if (source instanceof VoiceState)
+        source = source.channel;
+
+    return source.members.size === 1;
+}
+
+/**
+ * Returns the user, if they exist, that is
+ * alone in a given voice channel.
+ * 
+ * @param source the source channel or state
+ */
+export const whoIsAloneInVC = (source: VoiceState | VoiceChannel) => {
+    if (!isAloneInVC(source))
+        return null;
+
+    if (source instanceof VoiceState)
+        source = source.channel;
+
+    return source.members.array()[0].user;
+}
 
 /**
  * Attempts to find a user by a mention, or by
@@ -121,11 +219,6 @@ export const findUser = async (message: Message, input: string, def: User) => {
     }
 
     return target;
-}
-
-export const DEFAULT_STREAM_OPTS: StreamOptions = {
-    type: 'opus',
-    volume: 1
 }
 
 /**

@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { resolvableToId } from '.';
 import { UserResolvable } from 'discord.js';
 
 export class RechargeManager {
@@ -34,7 +35,7 @@ export class RechargeManager {
      * @param timeout the cooldown to apply
      */
     recharge = (user: UserResolvable, timeout: number) => {
-        let id = user.toString();
+        let id = resolvableToId(user);
         if (this.isRecharging(user))
             return false;
 
@@ -49,7 +50,7 @@ export class RechargeManager {
      * 
      * @param user the user to remove from cooldown
      */
-    removeRecharge = (user: UserResolvable) => this.map.delete(user.toString());
+    removeRecharge = (user: UserResolvable) => this.map.delete(resolvableToId(user));
 
     /**
      * Removes all applied cooldowns stored
@@ -65,7 +66,7 @@ export class RechargeManager {
      * @param user the user to check
      */
     isRecharging = (user: UserResolvable) => {
-        let id = user.toString();
+        let id = resolvableToId(user);
         if (!this.map.has(id))
             return false;
 
@@ -80,14 +81,14 @@ export class RechargeManager {
 
     /**
      * Attempts to return the time left
-     * on a user's cooldown, otherwise returns -1.
+     * on a user's cooldown, if they have one.
      * 
      * @param user the user to check
      */
     getRechargeTime = (user: UserResolvable) => {
-        let id = user.toString();
+        let id = resolvableToId(user);
         if (!this.isRecharging(user))
-            return -1;
+            return NaN;
 
         return this.map.get(id) - Date.now();
     }

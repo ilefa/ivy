@@ -17,8 +17,8 @@
 
 import { Logger } from './logger';
 import { spawn } from 'child_process';
-import { codeBlock, EmbedBuilder } from './util';
 import { StartupRunnable } from './startup';
+import { codeBlock, EmbedBuilder } from './util';
 import { GuildDataProvider, GuildTokenLike } from './data';
 
 import {
@@ -28,7 +28,6 @@ import {
     Guild,
     Message,
     MessageEmbed,
-    MessageResolvable,
     PresenceData,
     User
 } from 'discord.js';
@@ -60,7 +59,6 @@ export type IvyEngineOptions = {
     discord?: ClientOptions;
 }
 
-// TODO: MultiCommand help menu generation
 export type IvyCommandMessages = {
     permission: (user: User, message: Message, command: Command) => MessageEmbed | string;
     commandError: (user: User, message: Message, name: string, args: string[]) => MessageEmbed | string;
