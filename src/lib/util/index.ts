@@ -22,10 +22,13 @@ import { Readable } from 'stream';
 import { Units } from 'parse-duration';
 
 import {
+    ChannelResolvable,
     Client,
     Emoji,
     GuildResolvable,
     Guild,
+    GuildChannel,
+    GuildEmoji,
     GuildMember,
     Invite,
     Message,
@@ -35,11 +38,10 @@ import {
     StreamOptions,
     User,
     UserResolvable,
-    VoiceChannel,
     VoiceBroadcast,
+    VoiceChannel,
+    VoiceConnection,
     VoiceState,
-    GuildEmoji,
-    GuildChannel,
 } from 'discord.js';
 
 export * from './embed';
@@ -88,28 +90,42 @@ export enum VoiceStateChange {
     UNKNOWN = 'unknown'
 }
 
+enum VoiceConnectionMatchType { GUILD, CHANNEL }
+
 export type MessageLoader = {
     message: Message;
     start: number;
 }
 
+// Discord utilities
 export const bold = (message: any) => `**${message}**`;
 export const italic = (message: any) => `*${message}*`;
 export const emboss = (message: any) => `\`\`${message}\`\``;
-export const numberEnding = (num: number) => num === 1 ? '' : 's';
-export const cond = (cond: boolean, t: string, f: string) => cond ? t : f;
 export const link = (display: string, link: string) => `[${display}](${link})`;
-export const timeDiff = (start: number) => (Date.now() - start).toFixed(2);
-export const conforms = (regex: RegExp, target: string) => regex.test(target);
 export const codeBlock = (lang: string, message: any) => `\`\`\`${lang}\n${message}\`\`\``;
 export const asEmote = (emote: Emoji) => `<${emote.animated ? 'a' : ''}:${emote.name}:${emote.id}>`;
 export const asMention = (user: User | string) => `<@${user instanceof User ? user.id : user}>`;
 export const resolveEmote = (client: Client, id: string) => client.emojis.cache.get(id);
-export const mentionChannel = (id: string) => `<#${id}>`;
 export const mentionRole = (role: Role | string) => `<@&${role instanceof Role ? role.id : role}>`;
+export const mentionChannel = (id: string) => `<#${id}>`;
+
+// Time-related utilities
 export const getDuration = (input: string) => df(input, 's');
 export const getDurationWithUnit = (input: string, unit: Units) => df(input, unit);
+export const timeDiff = (start: number) => (Date.now() - start).toFixed(2);
 export const time = (time: number, format: string = 'MMMM Do YYYY, h:mm:ss a') => moment(time).format(format);
+
+// Element validation
+export const conforms = (regex: RegExp, target: string) => regex.test(target);
+export const isURL = (raw: string) => conforms(URL_REGEX, raw);
+export const isEmote = (raw: string) => conforms(EMOTE_REGEX, raw);
+export const isSnowflake = (raw: string) => conforms(SNOWFLAKE_REGEX, raw);
+export const isUserMention = (raw: string) => conforms(USER_MENTION_REGEX, raw);
+
+// String-related utilities
+export const cond = (cond: boolean, t: string, f: string) => cond ? t : f;
+export const onOff = (condition: boolean) => cond(condition, 'On', 'Off');
+export const numberEnding = (num: number) => num === 1 ? '' : 's';
 export const capitalizeFirst = (input: string) => input
     .split(' ')
     .map(str => str.charAt(0).toUpperCase() + str.slice(1))
@@ -139,6 +155,42 @@ export const resolvableToId = (resolvable: UserResolvable | GuildResolvable) => 
         return resolvable.guild.id;
 
     return null;
+}
+
+/**
+ * Attempts to find a voice connection for the given
+ * match, or uses a manually specified predicate.
+ * 
+ * @example
+ * ```ts
+ * // searches for a voice connection active in the provided guild or voice channel
+ * getVoiceConnection(client, guild | channel)
+ * 
+ * // searches for a voice connection active in the provided channel by using a manual predicate
+ * getVoiceConnection(client, null, connection => connection.channel.id === channel.id)
+ * ```
+ * 
+ * @param client an instance of a Discord.js client
+ * @param match a resolvable type to match
+ * @param predicate an optional predicate to manually match
+ */
+export const getVoiceConnection = (client: Client, match: GuildResolvable | ChannelResolvable, predicate?: (connection: VoiceConnection) => boolean) => {
+    if (predicate) return client.voice.connections.find(predicate);
+
+    let type = null;
+    if (match instanceof Guild || match instanceof VoiceChannel) {
+        type = match instanceof Guild
+            ? VoiceConnectionMatchType.GUILD
+            : VoiceConnectionMatchType.CHANNEL
+        match = match.id
+    }
+    
+    if (!type) throw new Error('`match` parameter must be a guild or voice channel resolvable type.');
+
+    return client.voice.connections.find(connection =>
+        type === VoiceConnectionMatchType.GUILD 
+            ? connection.channel.guild.id === match
+            : connection.channel.id === match);
 }
 
 /**

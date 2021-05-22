@@ -35,6 +35,26 @@ export class GuildQueue<T> {
     get = (guild: GuildResolvable) => this.queue.get(resolvableToId(guild));
 
     /**
+     * Overwrites the current value for a given guild,
+     * or if it doesn't exist, creates a new guild entry
+     * in the queue.
+     * 
+     * @param guild the guild to modify
+     * @param elem the element to set
+     */
+    set = (guild: GuildResolvable, elem: T[]) => this.queue.set(resolvableToId(guild), elem);
+
+    /**
+     * Overwrites the current value for a given guild
+     * by means of mapping all of it's current elements
+     * according to a provided `transform` function.
+     * 
+     * @param guild the guild to modify
+     * @param transform the function to transform it's elements
+     */
+    map = (guild: GuildResolvable, transform: (elem: T) => T) => this.set(guild, this.get(guild).map(transform) || []);
+
+    /**
      * Pushes a new item to the end of the guild
      * queue for the provided guild, and creates
      * a new guild queue if none exists.
