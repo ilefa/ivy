@@ -1,6 +1,6 @@
 {
   "name": "@ilefa/ivy",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "author": "ILEFA Labs",
   "license": "GPL-3.0",
   "description": "Specially crafted Discord.js wrapper",
