@@ -41,7 +41,7 @@ import {
     VoiceBroadcast,
     VoiceChannel,
     VoiceConnection,
-    VoiceState,
+    VoiceState
 } from 'discord.js';
 
 export * from './embed';
@@ -54,11 +54,12 @@ export const DAY_MILLIS = 864e5;
 export const LOADER = '<a:loading:788890776444207194>';
 export const LOOKING = '<a:looking:807057053713039420>';
 export const JOIN_BUTTON = '<:join:798763992813928469>';
-export const RED_CIRCLE = '<:dnd:808585033991585802>';
-export const YELLOW_CIRCLE = '<:idle:808585033908224010>';
-export const GREEN_CIRCLE = '<:online:808585033899966464>';
-export const BLUE_CIRCLE = '<:blue:836447279782297640>';
-export const GRAY_CIRCLE = '<:offline:808585033890791424>';
+export const LEAVE_BUTTON = '<:leave:848364381645307926>';
+export const RED_CIRCLE = '<:yellow:848364257640054805>';
+export const YELLOW_CIRCLE = '<:green:848364257434927125>';
+export const GREEN_CIRCLE = '<:green:848364257434927125>';
+export const BLUE_CIRCLE = '<:blue:848364257577271296>';
+export const GRAY_CIRCLE = '<:gray:848364257644773416>';
 
 export const SNOWFLAKE_REGEX = /^\d{18,}$/;
 export const EMOTE_REGEX = /<(a|):\w+:\d{18,}>/;
@@ -86,13 +87,19 @@ export type VoiceConnectionPrefs = {
 }
 
 export enum VoiceStateChange {
-    CONNECT = 'connect',
-    DISCONNECT = 'disconnect',
-    DEAF = 'deaf',
-    MUTE = 'mute',
-    UNDEAF = 'undeaf',
-    UNMUTE = 'unmute',
-    UNKNOWN = 'unknown'
+    CONNECT,
+    DISCONNECT,
+    DEAF,
+    MUTE,
+    UNDEAF,
+    UNMUTE,
+    SERVER_DEAF,
+    SERVER_MUTE,
+    SERVER_UNDEAF,
+    SERVER_UNMUTE,
+    STREAM,
+    STREAM_STOP,
+    UNKNOWN
 }
 
 enum VoiceConnectionMatchType { GUILD, CHANNEL }
@@ -207,12 +214,41 @@ export const getVoiceConnection = (client: Client, match: GuildResolvable | Chan
  * @param b the current voice state
  */
 export const determineVoiceStateChange = (a: VoiceState, b: VoiceState) => {
-    if (!a.channel && b.channel) return VoiceStateChange.CONNECT;
-    if (a.channel && !b.channel) return VoiceStateChange.DISCONNECT;
-    if (!a.deaf && b.deaf)       return VoiceStateChange.DEAF;
-    if (!a.mute && b.mute)       return VoiceStateChange.MUTE;
-    if (a.deaf && !b.deaf)       return VoiceStateChange.UNDEAF;
-    if (a.mute && !b.mute)       return VoiceStateChange.UNMUTE;
+    if (!a.channel && b.channel)
+        return VoiceStateChange.CONNECT;
+    
+    if (a.channel && !b.channel)
+        return VoiceStateChange.DISCONNECT;
+    
+    if (!a.deaf && b.deaf)
+        return VoiceStateChange.DEAF;
+    
+    if (!a.mute && b.mute)
+        return VoiceStateChange.MUTE;
+    
+    if (a.deaf && !b.deaf)
+        return VoiceStateChange.UNDEAF;
+    
+    if (a.mute && !b.mute)
+        return VoiceStateChange.UNMUTE;
+
+    if (!a.serverDeaf && b.serverDeaf)
+        return VoiceStateChange.SERVER_DEAF;
+
+    if (a.serverDeaf && !b.serverDeaf)
+        return VoiceStateChange.SERVER_UNDEAF;
+
+    if (!a.serverMute && b.serverMute)
+        return VoiceStateChange.SERVER_MUTE;
+
+    if (a.serverMute && !b.serverMute)
+        return VoiceStateChange.SERVER_UNMUTE;
+
+    if (a.serverMute && !b.serverMute)
+        return VoiceStateChange.STREAM;
+
+    if (a.streaming && !b.streaming)
+        return VoiceStateChange.STREAM_STOP;
 
     return VoiceStateChange.UNKNOWN;
 }

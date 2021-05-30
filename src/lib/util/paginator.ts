@@ -66,7 +66,7 @@ export class PaginatedEmbed {
               title: string,
               icon: string,
               pages: PageContent[],
-              timeout: number = 600000,
+              timeout: number = 60000,
               thumbnail: string = null,
               beginColor: string = 'black',
               endColor: string = engine.opts.color.toString()): PaginatedEmbed {
@@ -81,7 +81,7 @@ export class PaginatedEmbed {
                       items: T[],
                       perPage: number,
                       transform: (itemsOnPage: T[]) => PageContent,
-                      timeout: number = 600000,
+                      timeout: number = 60000,
                       thumbnail: string = null,
                       beginColor: string = 'black',
                       endColor: string = engine.opts.color.toString()) {
@@ -118,14 +118,12 @@ export class PaginatedEmbed {
 
     private init(message: Message) {
         this.message = message;
-        
-        const filter = (_reaction: MessageReaction, user: User) => !user.bot;
-
-        if (this.pages.length === 1) {
+        if (this.pages.length === 1)
             return;
-        }
 
-        this.collector = message.createReactionCollector(filter, { time: this.timeout });
+        this.collector = message.createReactionCollector((_reaction: MessageReaction, user: User) => !user.bot && user.id === this.author.id, {
+            time: this.timeout
+        });
 
         this.collector.on('collect', (reaction, user) => {
             if (this.functionMap.get(reaction.emoji.name)(this)) {
