@@ -1,4 +1,4 @@
-# <img src=".assets/ivy.png" align="left" alt="icon" width="35" height="35"> Ivy
+# <img src=".assets/ivy.png" align="left" alt="icon" width="35" height="35">Ivy
 
 ![version badge](https://img.shields.io/github/package-json/v/ilefa/ivy?color=2573bc)
 ![dependencies badge](https://img.shields.io/david/ilefa/ivy)
