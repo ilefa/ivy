@@ -3,6 +3,7 @@
 ![version badge](https://img.shields.io/github/package-json/v/ilefa/ivy?color=2573bc)
 ![dependencies badge](https://img.shields.io/david/ilefa/ivy)
 ![vuln badge](https://img.shields.io/snyk/vulnerabilities/github/ilefa/ivy)
+![codeql badge](https://img.shields.io/github/workflow/status/ilefa/ivy/CodeQL?label=codeql%20analysis)
 
 Ivy is a TypeScript library that deals with the fundamentals of building a Discord.js-based bot.
 
