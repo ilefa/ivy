@@ -1,4 +1,4 @@
-# Ivy
+# <img src=".assets/ivy.png" alt="icon" width="40" height="40" style="vertical-align: -0.8rem;"> Ivy
 
 ![version badge](https://img.shields.io/github/package-json/v/ilefa/ivy?color=2573bc)
 ![dependencies badge](https://img.shields.io/david/ilefa/ivy)
@@ -319,7 +319,7 @@ In the above example, a simple say command is created, which simply echoes back 
 
 Notice the parameters passed to the constructor - the first is what the bot should listen for, in this case "say", so when .say (or whatever prefix you choose) is messaged,
 the execute function will be called with the user who sent the message, the message object itself, and the arguments provided. The next three arguments have to do with the help
-message that will be displayed if ``CommandReturn.HELP_MENU`` is returned inside of the execute function (or if ``-h`` is supplied as the first parameter).
+message that will be displayed if ``CommandReturn.HELP_MENU`` is returned inside of the execute function (or if ``-h`` is supplied as the first and only parameter).
 
 The first of these is the message itself that will be displayed, the second is a custom title for the embed, which is not provided, and the third is an array of fields, which is also not provided.
 Below is what results from these three parameters being set in this way,
@@ -330,7 +330,7 @@ The next parameter is the base permissions, and in this case, you must have Supe
 
 The next parameter is one we provided in case you want to hide certain commands from your help command implementation, so let's say you have some funny commands or debugging commands you don't want to show up in a public help message, you can use this parameter to filter those out.
 
-Two of the remaining three parameters, ``permitRoles`` and ``permitUsers``, are explained above in the [Role Overrides](#Role-Overrides) and [User Overrides](#User-Overrides) sections respectively.
+Two of the remaining three parameters, ``permitRoles`` and ``permitUsers``, are explained above in the [Role Overrides](#role-overrides) and [User Overrides](#user-overrides) sections respectively.
 
 Lastly, the ``internalCommand`` parameter will only allow this command to be run in servers specified in the ``reportErrors`` array, and is helpful if you have development commands that you only want to be ran in certain development servers.
 

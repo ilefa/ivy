@@ -47,13 +47,15 @@ export class PaginatedEmbed {
                 public title: string,
                 public icon: string,
                 public pages: PageContent[],
-                public timeout: number = 600000,
+                public timeout: number = 60000,
                 public thumbnail: string = null,
                 public beginColor: string = 'black',
-                public endColor: string = engine.opts.color.toString()) {
+                public endColor: string = engine.opts.color.toString(),
+                public footerIcon: string = null) {
 
         this.page = 1;
         this.colorGradient = TinyGradient([beginColor, endColor]);
+        if (!footerIcon) this.footerIcon = this.message.guild.iconURL();
 
         channel
             .send(this.generatePage(this.page))
@@ -69,8 +71,9 @@ export class PaginatedEmbed {
               timeout: number = 60000,
               thumbnail: string = null,
               beginColor: string = 'black',
-              endColor: string = engine.opts.color.toString()): PaginatedEmbed {
-        return new PaginatedEmbed(engine, channel, author, title, icon, pages, timeout, thumbnail, beginColor, endColor);
+              endColor: string = engine.opts.color.toString(),
+              footerIcon: string = null): PaginatedEmbed {
+        return new PaginatedEmbed(engine, channel, author, title, icon, pages, timeout, thumbnail, beginColor, endColor, footerIcon);
     }
 
     static ofItems<T>(engine: IvyEngine,
@@ -84,7 +87,8 @@ export class PaginatedEmbed {
                       timeout: number = 60000,
                       thumbnail: string = null,
                       beginColor: string = 'black',
-                      endColor: string = engine.opts.color.toString()) {
+                      endColor: string = engine.opts.color.toString(),
+                      footerIcon: string = null) {
 
         let total = Math.ceil(items.length / perPage);
 
@@ -104,7 +108,7 @@ export class PaginatedEmbed {
 
         return new PaginatedEmbed(engine, channel, author,
                                   title, icon, paginate(items, 1, []),
-                                  timeout, thumbnail, beginColor, endColor);
+                                  timeout, thumbnail, beginColor, endColor, footerIcon);
     }
 
     private generatePage(pnum: number) {
@@ -112,7 +116,7 @@ export class PaginatedEmbed {
         return this.engine.embeds.build(this.title, this.icon, this.pages[pind]?.description || '', this.pages[pind]?.fields || [])
                 .setTimestamp()
                 .setThumbnail(this.thumbnail)
-                .setFooter(`Page ${pnum} of ${this.pages.length}`, this.channel.guild.iconURL())
+                .setFooter(`Page ${pnum} of ${this.pages.length}`, this.footerIcon)
                 .setColor(this.getColor(pind));
     }
 

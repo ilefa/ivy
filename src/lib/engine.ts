@@ -163,15 +163,14 @@ export abstract class IvyEngine {
         this.moduleManager = new ModuleManager(this);
         this.commandManager = new CommandManager(this);
         
-        this.moduleManager.registerModule(opts.eventHandler || new DefaultEventManager(this));
-        this.moduleManager.registerModule(this.commandManager);
-
         this.registerCommands();
         this.registerFlows();
         this.registerModules();
 
+        this.moduleManager.registerModule(opts.eventHandler || new DefaultEventManager(this));
+        this.moduleManager.registerModule(this.commandManager);
         this.moduleManager.init();
-
+        
         this.client.login(opts.token);
         this.client.on('ready', async () => {
             if (this.vcsEnabled) {
@@ -208,13 +207,27 @@ export abstract class IvyEngine {
      * Registers a module.
      * @param module the module instance
      */
-    registerModule = (module: Module) => this.moduleManager.registerModule(module);
+    registerModule = (module: Module) => {
+        try {
+            this.moduleManager.registerModule(module);
+        } catch (e) {
+            this.logger.severe(this.opts.name, 'Encountered an error while registering a module:');
+            this.logger.unlisted(e.stack);
+        }
+    }
 
     /**
      * Unregisters a module.
      * @param module the module instance
      */
-    unregisterModule = (module: Module) => this.moduleManager.unregisterModule(module);
+    unregisterModule = (module: Module) => {
+        try {
+            this.moduleManager.unregisterModule(module);
+        } catch (e) {
+            this.logger.severe(this.opts.name, 'Encountered an error while unregistering a module:')
+            this.logger.unlisted(e.stack);
+        }
+    }
 
     /**
      * Registers a flow.
@@ -278,7 +291,8 @@ export abstract class IvyEngine {
         return await this
             .client
             .guilds
-            .fetch(id);
+            .fetch(id)
+            .catch(_ => null);
     }
 
     /**
@@ -292,7 +306,8 @@ export abstract class IvyEngine {
         return await this
             .client
             .users
-            .fetch(id);
+            .fetch(id)
+            .catch(_ => null);
     }
 
     /**
@@ -306,7 +321,8 @@ export abstract class IvyEngine {
         return await this
             .client
             .channels
-            .fetch(id) as T;
+            .fetch(id)
+            .catch(_ => null) as T;
     }
 
     /**
@@ -338,14 +354,12 @@ export abstract class IvyEngine {
      * Returns the current git version of this project.
      */
     getCurrentVersion = async () => {
-        if (!this.vcsEnabled) {
+        if (!this.vcsEnabled)
             return 'unknown';
-        }
 
         let res = await this.execGit('rev-parse HEAD').catch(err => null);
-        if (!this.HASH_PATTERN.test(res)) {
+        if (!this.HASH_PATTERN.test(res))
             return 'unknown';
-        }
 
         return res.substring(0, 7);
     };
@@ -354,14 +368,16 @@ export abstract class IvyEngine {
      * Returns the current upstream git version of this project.
      */
     getUpstreamVersion = async () => {
-        if (!this.vcsEnabled) {
+        if (!this.vcsEnabled)
             return 'unknown';
-        }
 
-        let res = await this.execGit(`ls-remote git@github.com:${this.opts.gitRepo}.git | grep refs/heads/${await this.getReleaseChannel()} | cut -f 1`).catch(err => null);
-        if (!res) {
-            return 'unknown';   
-        }
+        let cmd = `ls-remote git@github.com:${this.opts.gitRepo}.git | grep refs/heads/${await this.getReleaseChannel()} | cut -f 1`;
+        let res = await this
+            .execGit(cmd)
+            .catch(_ => null);
+
+        if (!res)
+            return 'unknown';
 
         return res.substring(0, 7);
     }
@@ -370,14 +386,15 @@ export abstract class IvyEngine {
      * Returns the current "release channel" aka branch of this local build.
      */
     getReleaseChannel = async () => {
-        if (!this.vcsEnabled) {
+        if (!this.vcsEnabled)
             return 'unknown';
-        }
 
-        let res = await this.execGit('rev-parse --abbrev-ref HEAD').catch(err => null);
-        if (!res || res.startsWith('fatal')) {
+        let res = await this
+            .execGit('rev-parse --abbrev-ref HEAD')
+            .catch(_ => null);
+
+        if (!res || res.startsWith('fatal'))
             return 'unknown';
-        }
 
         return res;
     };
@@ -387,21 +404,16 @@ export abstract class IvyEngine {
      * @param then what to do with the new version, or "Failure" if it doesn't succeed.
      */
     update = async (then?: (version: String) => void) => {
-        if (!this.vcsEnabled) {
+        if (!this.vcsEnabled)
             return then('Failure');
-        }
 
         let local = await this.getCurrentVersion();
         let remote = await this.getUpstreamVersion();
-        if (local.toLowerCase() === remote.toLowerCase()) {
+        if (local.toLowerCase() === remote.toLowerCase())
             return then(local);
-        }
 
         let res = await this.execGit('git pull');
-        if (!res) {
-            return then('Failure');
-        }
-
+        if (!res) return then('Failure');
         return then(await this.getCurrentVersion());
     }
 

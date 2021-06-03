@@ -17,8 +17,8 @@
 
 import { Module } from '../../module';
 import { User, Message, Client } from 'discord.js';
+import { isSnowflake, numberEnding } from '../../../util';
 import { IvyEmbedIcons, IvyEngine } from '../../../engine';
-import { conforms, numberEnding, SNOWFLAKE_REGEX } from '../../../util';
 
 import {
     Command,
@@ -176,7 +176,7 @@ export class CommandManager extends Module {
 
     private hasAnyPermittedRoles = (message: Message, { command }: CommandEntry) => {
         return message.member.roles.cache.some(role => command.permitRoles.some(raw => {
-            if (conforms(SNOWFLAKE_REGEX, raw))
+            if (isSnowflake(raw))
                 return role.id === raw;
             return role.name.toLowerCase() === raw.toLowerCase();
         }));

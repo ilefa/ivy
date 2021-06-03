@@ -51,6 +51,7 @@ export * from './recharge';
 export * from './redis';
 
 export const DAY_MILLIS = 864e5;
+export const DATE_FORMAT = 'MMMM Do YYYY, h:mm:ss a';
 export const LOADER = '<a:loading:788890776444207194>';
 export const LOOKING = '<a:looking:807057053713039420>';
 export const JOIN_BUTTON = '<:join:798763992813928469>';
@@ -128,10 +129,10 @@ export const mentionRole = (role: Role | string) => `<@&${role instanceof Role ?
 export const mentionChannel = (id: string) => `<#${id}>`;
 
 // Time-related utilities
-export const getDuration = (input: string) => df(input, 's');
-export const getDurationWithUnit = (input: string, unit: Units) => df(input, unit);
+export const toDuration = (input: string, unit: Units = 's') => df(input, unit);
 export const timeDiff = (start: number) => (Date.now() - start).toFixed(2);
-export const time = (time: number, format: string = 'MMMM Do YYYY, h:mm:ss a') => moment(time).format(format);
+export const time = (time: number, format: string = DATE_FORMAT) => moment(time).format(format);
+export const now = (format: string = DATE_FORMAT) => time(Date.now(), format);
 
 // Element validation
 export const conforms = (regex: RegExp, target: string) => regex.test(target);
@@ -301,11 +302,11 @@ export const findUser = async (message: Message, input: string, def: User) => {
     if (input) {
         let client = input;
         let temp = null;
-        if (conforms(SNOWFLAKE_REGEX, client)) {
+        if (isSnowflake(client)) {
             temp = await message.client.users.fetch(client);
         }
 
-        if (conforms(USER_MENTION_REGEX, client)) {
+        if (isUserMention(client)) {
             let id = client.slice(3, client.length - 1);
             temp = await message.client.users.fetch(id);
         }
@@ -416,13 +417,11 @@ export const replaceAll = (input: string, search: string | RegExp, replace: stri
         return copy;
     }
 
-    if (!copy.includes(search)) {
+    if (!copy.includes(search))
         return copy;
-    }
 
-    while (copy.includes(search)) {
+    while (copy.includes(search))
         copy = copy.replace(search, replace);
-    }
 
     return copy;
 }
@@ -641,7 +640,7 @@ export const join = <U, T>(list: U[], delimiter: string, apply: (val: U) => T) =
  * @param list the list of elements of type U
  * @param predicate the predicate to sum types of U
  */
-export const count = <U, T>(list: U[], predicate: (val: U) => boolean) => {
+export const count = <U>(list: U[], predicate: (val: U) => boolean) => {
     return list
         .filter(predicate)
         .length;

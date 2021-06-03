@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as Redis from 'redis';
-
 import { RedisClient } from 'redis';
 import { AsyncRedisClient } from './util';
 
@@ -55,7 +53,6 @@ export class Stash<K, T> {
     }
 
     private makeKey = (key: K) => `${this.prefix + this.delimiter + this.opts.keyspace.serialize(key)}`;
-    private remoteKey = (input: string) => `${this.opts.keyspace.deserialize(input.split(`${this.prefix + this.delimiter}`)[1])}`;
     private selectAll = () => `${this.prefix + this.delimiter}*`;
 
     /**

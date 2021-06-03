@@ -36,7 +36,7 @@ export class ModuleManager {
      */
     registerModule = (module: Module) => {
         if (this.modules.some(m => m.name.toLowerCase() === module.name.toLowerCase())) {
-            throw new Error(`Ambigious module name '${module.name}'!`);
+            throw new Error(`Ambigious module '${module.name}'!`);
         }
 
         module.client = this.client;
