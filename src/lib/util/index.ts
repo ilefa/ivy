@@ -109,6 +109,12 @@ export type MessageLoader = {
     start: number;
 }
 
+export type SearchAndReplace = {
+    search: string | RegExp;
+    replacement: string;
+    useRegularReplace?: boolean;
+}
+
 // Discord utilities
 export const bold = (message: any) => `**${message}**`;
 export const italic = (message: any) => `*${message}*`;
@@ -398,8 +404,18 @@ export const endLoader = async (loader: MessageLoader) => {
  * @param search the string to replace
  * @param replace what to replace it with
  */
-export const replaceAll = (input: string, search: string, replace: string) => {
+export const replaceAll = (input: string, search: string | RegExp, replace: string) => {
     let copy = String(input);
+    if (search instanceof RegExp) {
+        if (!search.test(copy))
+            return copy;
+
+        while (search.test(copy))
+            copy = copy.replace(search, replace);
+
+        return copy;
+    }
+
     if (!copy.includes(search)) {
         return copy;
     }
@@ -409,6 +425,27 @@ export const replaceAll = (input: string, search: string, replace: string) => {
     }
 
     return copy;
+}
+
+/**
+ * Performs a series of replacements on
+ * a given string.
+ * 
+ * @param input the input string
+ * @param replacements the replacements to make
+ */
+export const replace = (input: string, replacements: SearchAndReplace[]) => {
+    let temp = input.slice();
+    for (let { search, replacement, useRegularReplace } of replacements) {
+        if (!useRegularReplace) {
+            temp = replaceAll(temp, search, replacement);
+            continue;
+        }
+
+        temp = temp.replace(search, replacement);
+    }
+
+    return temp;
 }
 
 export interface PermissionAddons extends PermissionFlags {

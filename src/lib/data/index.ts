@@ -16,4 +16,5 @@
  */
 
 export * from './cache';
+export * from './default';
 export * from './provider';

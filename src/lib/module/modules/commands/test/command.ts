@@ -53,14 +53,7 @@ export abstract class TestCommand extends Command implements TestFlow {
 
 }
 
-export class TestCommandEntry {
-
-    /**
-     * A wrapped test flow instance.
-     * 
-     * @param name the name of the flow
-     * @param command the flow object
-     */
-    constructor(public name: string, public command: TestCommand | GenericTestCommand<any>) {}
-
+export type TestCommandEntry = {
+    name: string;
+    command: TestCommand | GenericTestCommand<any>;
 }

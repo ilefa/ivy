@@ -19,9 +19,10 @@ import { Logger } from './logger';
 import { spawn } from 'child_process';
 import { StartupRunnable } from './startup';
 import { codeBlock, EmbedBuilder } from './util';
-import { GuildDataProvider, GuildTokenLike } from './data';
+import { DefaultGuildDataProvider, GuildDataProvider, GuildTokenLike } from './data';
 
 import {
+    Channel,
     Client,
     ClientOptions,
     ColorResolvable,
@@ -29,6 +30,7 @@ import {
     Message,
     MessageEmbed,
     PresenceData,
+    TextChannel,
     User
 } from 'discord.js';
 
@@ -51,7 +53,8 @@ export type IvyEngineOptions = {
     superPerms: string[];
     reportErrors: string[];
     color: ColorResolvable;
-    provider: GuildDataProvider<GuildTokenLike>;
+    prefix?: string;
+    provider?: GuildDataProvider<GuildTokenLike>;
     commandMessages?: IvyCommandMessages;
     startup?: StartupRunnable;
     eventHandler?: EventManager;
@@ -95,7 +98,6 @@ export abstract class IvyEngine {
     private HASH_PATTERN = /\b[0-9a-f]{5,40}\b/;
     private GIT_REPO_PATTERN = /\w+\/\w+/;
     private vcsEnabled: boolean;
-
 
     constructor(public opts: IvyEngineOptions) {
         this.start = Date.now();
@@ -141,11 +143,28 @@ export abstract class IvyEngine {
         if (!this.opts.commandMessages)
             this.opts.commandMessages = DEFAULT_COMMAND_MESSAGES;
 
+        if (this.opts.provider && this.opts.prefix) {
+            this.logger.warn(opts.name, 'Ambigious data provider options detected.');
+            this.logger.warn(opts.name, ' - Either supply both a data provider, or a prefix, not both.');
+            return process.exit(0);
+        }
+        
+        if (!this.opts.provider && !this.opts.prefix) {
+            this.logger.severe(opts.name, 'Cannot initialize DefaultGuildDataProvider without a prefix parameter.');
+            this.logger.severe(opts.name, ' - Either explicitly supply a data provider, or supply a prefix to use the default provider.');
+            return process.exit(0);
+        }
+
+        if (!this.opts.provider && this.opts.prefix)
+            this.opts.provider = new DefaultGuildDataProvider(this.opts.prefix);
+
+        this.provider = this.opts.provider;
         this.embeds = new EmbedBuilder(this);
         this.moduleManager = new ModuleManager(this);
         this.commandManager = new CommandManager(this);
         
         this.moduleManager.registerModule(opts.eventHandler || new DefaultEventManager(this));
+        this.moduleManager.registerModule(this.commandManager);
 
         this.registerCommands();
         this.registerFlows();
@@ -183,7 +202,7 @@ export abstract class IvyEngine {
      * @param name the name of the command
      * @param command the command instance
      */
-    registerCommand = (name: string, command: Command) => this.commandManager.registerCommand(name, command);
+    registerCommand = (command: Command) => this.commandManager.registerCommand(command);
 
     /**
      * Registers a module.
@@ -277,6 +296,20 @@ export abstract class IvyEngine {
     }
 
     /**
+     * Attempts to find a channel (of type T) using the
+     * Discord.js instance cache, and if not found,
+     * queries the Discord API.
+     * 
+     * @param id the id of the channel
+     */
+    findChannel = async <T extends Channel = TextChannel>(id: string) => {
+        return await this
+            .client
+            .channels
+            .fetch(id) as T;
+    }
+
+    /**
      * Spawns a shell and runs git command.
      * @param args args to pass to <git ...>
      */
@@ -330,7 +363,7 @@ export abstract class IvyEngine {
             return 'unknown';   
         }
 
-        return res.substr(0, 7);
+        return res.substring(0, 7);
     }
 
     /**

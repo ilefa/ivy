@@ -75,9 +75,9 @@ export type LoggingLevel = {
 }
 
 export type LoggingPrefs = {
-    date?: Colors;
-    pipe?: Colors;
-    header?: Colors;
+    date: Colors;
+    pipe: Colors;
+    header: Colors;
 }
 
 export class Logger {
@@ -89,9 +89,7 @@ export class Logger {
     }
 
     constructor(public opts?: LoggingPrefs) {
-        this.opts = opts 
-            ? Object.assign(opts, this.defaultPrefs) 
-            : this.defaultPrefs;
+        this.opts = opts ?? this.defaultPrefs;
     }
 
     /**

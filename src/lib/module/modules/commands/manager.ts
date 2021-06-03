@@ -16,9 +16,9 @@
  */
 
 import { Module } from '../../module';
-import { numberEnding } from '../../../util';
 import { User, Message, Client } from 'discord.js';
 import { IvyEmbedIcons, IvyEngine } from '../../../engine';
+import { conforms, numberEnding, SNOWFLAKE_REGEX } from '../../../util';
 
 import {
     Command,
@@ -48,10 +48,13 @@ export class CommandManager extends Module {
      * @param name the name of the command
      * @param command the command class
      */
-    registerCommand(name: string, command: Command) {
+    registerCommand(command: Command) {
         command.manager = this;
         command.start();
-        this.commands.push(new CommandEntry(name, command));
+        this.commands.push({
+            name: command.name,
+            command
+        });
     }
 
     /**
@@ -62,7 +65,11 @@ export class CommandManager extends Module {
     registerTestFlow(flow: TestCommand) {
         flow.manager = this;
         flow.start();
-        this.testFlows.push(new TestCommandEntry(flow.name, flow));
+
+        this.testFlows.push({
+            name: flow.name,
+            command: flow
+        });
     }
 
     /**
@@ -74,7 +81,11 @@ export class CommandManager extends Module {
         flow.manager = this;
         flow.module = module;
         flow.start();
-        this.testFlows.push(new TestCommandEntry(flow.name, flow));
+        
+        this.testFlows.push({
+            name: flow.name,
+            command: flow
+        });
     }
 
     start() {
@@ -110,7 +121,12 @@ export class CommandManager extends Module {
         for (const cmd of this.commands) {
             if (cmd.name.toLowerCase() === name) {
                 try {
-                    if (!this.engine.has(user, cmd.command.permission, message.guild)) {
+                    if (cmd.command.internalCommand && !this.engine.opts.reportErrors.includes(message.guild.id))
+                        break;
+
+                    if (!this.engine.has(user, cmd.command.permission, message.guild)
+                            && !this.hasAnyPermittedRoles(message, cmd)
+                            && !this.isPermittedUser(message, cmd)) {
                         message.reply(this.engine.opts.commandMessages.permission(user, message, cmd.command));
                         break;
                     }
@@ -156,6 +172,18 @@ export class CommandManager extends Module {
                 }
             }
         }
+    }
+
+    private hasAnyPermittedRoles = (message: Message, { command }: CommandEntry) => {
+        return message.member.roles.cache.some(role => command.permitRoles.some(raw => {
+            if (conforms(SNOWFLAKE_REGEX, raw))
+                return role.id === raw;
+            return role.name.toLowerCase() === raw.toLowerCase();
+        }));
+    }
+
+    private isPermittedUser = (message: Message, { command }: CommandEntry) => {
+        return command.permitUsers.includes(message.author.id);
     }
 
 }

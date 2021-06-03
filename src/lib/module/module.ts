@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Logger } from '../logger';
 import { Client } from 'discord.js';
 import { ModuleManager } from './manager';
 
@@ -22,8 +23,9 @@ export abstract class Module {
 
     client: Client;
     manager: ModuleManager;
+    logger: Logger;
 
-    constructor(public name: string) {}
+    constructor(public name: string, private logPrefix?: string) {}
 
     /**
      * Called when the module is enabled.
@@ -34,5 +36,31 @@ export abstract class Module {
      * Called when the module is disabled.
      */
     abstract end(): void;
+
+    /**
+     * Logs the supplied message.
+     * @param message the message to log
+     */
+    log = (message: string) => this.manager.engine.logger.info(this.logPrefix || this.name, message);
+
+    /**
+     * Logs the supplied warning.
+     * @param message the message to warn
+     */
+    warn = (message: string) => this.manager.engine.logger.warn(this.logPrefix || this.name, message);
+
+    /**
+     * Logs the supplied error.
+     * @param message the error to log
+     */
+    severe = (message: string) => this.manager.engine.logger.severe(this.logPrefix || this.name, message);
+    
+    /**
+     * Logs the supplied exception.
+     * 
+     * @param error the error to log
+     * @param message the base message
+     */
+    except = <E extends Error>(error: E, message: string) => this.manager.engine.logger.except(error, this.logPrefix || this.name, message);
 
 }

@@ -38,6 +38,9 @@ export abstract class Command {
      * @param permission the required permission
      * @param deleteMessage whether or not to delete the original command message
      * @param hideFromHelp whether or not to hide this command from the help menu
+     * @param permitRoles an array of role names or ids that are permitted to execute this command
+     * @param permitUsers an array of user ids that are permitted to execute this command
+     * @param internalCommand whether or not to only run when executed on a server included in the `reportErrors` array
      */
     constructor(public name: string,
                 public help: string,
@@ -45,7 +48,10 @@ export abstract class Command {
                 public helpFields: EmbedFieldData[],
                 public permission: number,
                 public deleteMessage = true,
-                public hideFromHelp = false) {
+                public hideFromHelp = false,
+                public permitRoles: string[] = [],
+                public permitUsers: string[] = [],
+                public internalCommand = false) {
     }
 
     start() {
@@ -65,16 +71,9 @@ export abstract class Command {
 
 }
 
-export class CommandEntry {
-
-    /**
-     * A wrapped command instance.
-     * 
-     * @param name the name of the command
-     * @param command the command object
-     */
-    constructor(public name: string, public command: Command) {}
-
+export type CommandEntry = {
+    name: string;
+    command: Command;
 }
 
 export enum CommandReturn {
