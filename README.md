@@ -60,7 +60,7 @@ export default class StonksBot extends IvyEngine {
     constructor() {
         // Sample configuration for StonksBot
         super({
-            token: process.ENV.TOKEN,
+            token: process.env.TOKEN,
             name: 'Stonks',
             logger: new Logger(),
             gitRepo: 'ilefa/stonks',

@@ -18,7 +18,7 @@
 import { Logger } from './logger';
 import { spawn } from 'child_process';
 import { StartupRunnable } from './startup';
-import { codeBlock, EmbedBuilder } from './util';
+import { codeBlock, EmbedBuilder, isSnowflake, join } from './util';
 import { DefaultGuildDataProvider, GuildDataProvider, GuildTokenLike } from './data';
 
 import {
@@ -74,9 +74,9 @@ export enum IvyEmbedIcons {
     EDU = 'https://storage.googleapis.com/stonks-cdn/univ.png',
     ERROR = 'https://storage.googleapis.com/stonks-cdn/error.png',
     HELP = 'https://storage.googleapis.com/stonks-cdn/help.png',
-    MEMBER = 'https://storage.googleapis.com/stonks-cdn/jack.png',
+    MEMBER = 'https://storage.googleapis.com/stonks-cdn/member.png',
     MESSAGE = 'https://storage.googleapis.com/stonks-cdn/message.png',
-    NUMBERS = 'https://storage.googleapis.com/stonks-cdn/counther.png',
+    NUMBERS = 'https://storage.googleapis.com/stonks-cdn/numbers.png',
     POLL = 'https://storage.googleapis.com/stonks-cdn/poll.png',
     PREFS = 'https://storage.googleapis.com/stonks-cdn/prefs.png',
     STONKS = 'https://storage.googleapis.com/stonks-cdn/stonks.png',
@@ -109,54 +109,10 @@ export abstract class IvyEngine {
 
         this.opts.startup?.run(this);
         this.client = new Client(opts.discord || {
-            partials: ['CHANNEL', 'MESSAGE', 'REACTION'],
-            fetchAllMembers: true
+            partials: ['CHANNEL', 'MESSAGE', 'REACTION']
         });
 
-        const DEFAULT_COMMAND_MESSAGES: IvyCommandMessages = {
-            permission: (_user, _message, _command) => this.embeds.build('Whoops', IvyEmbedIcons.ERROR, `You don't have permission to do this.`),
-            commandError: (_user, message, _name, _args) => this.embeds.build('Huh? That wasn\'t supposed to happen..', IvyEmbedIcons.ERROR, 'Something went wrong while processing your command.', [], message),
-            commandErrorVerbose: (_user, message, name, args, error) => this.embeds.build('Huh? That wasn\'t supposed to happen..', IvyEmbedIcons.ERROR, `Something went wrong while processing your command.`, [
-                {
-                    name: 'Command',
-                    value: codeBlock('', name),
-                    inline: true
-                },
-                {
-                    name: 'Arguments',
-                    value: codeBlock('json', JSON.stringify(args)),
-                    inline: true
-                },
-                {
-                    name: 'Error',
-                    value: codeBlock('', error.message),
-                    inline: false
-                },
-                {
-                    name: 'Stacktrace',
-                    value: codeBlock('', error.stack),
-                    inline: false
-                }
-            ], message)
-        }
-
-        if (!this.opts.commandMessages)
-            this.opts.commandMessages = DEFAULT_COMMAND_MESSAGES;
-
-        if (this.opts.provider && this.opts.prefix) {
-            this.logger.warn(opts.name, 'Ambigious data provider options detected.');
-            this.logger.warn(opts.name, ' - Either supply both a data provider, or a prefix, not both.');
-            return process.exit(0);
-        }
-        
-        if (!this.opts.provider && !this.opts.prefix) {
-            this.logger.severe(opts.name, 'Cannot initialize DefaultGuildDataProvider without a prefix parameter.');
-            this.logger.severe(opts.name, ' - Either explicitly supply a data provider, or supply a prefix to use the default provider.');
-            return process.exit(0);
-        }
-
-        if (!this.opts.provider && this.opts.prefix)
-            this.opts.provider = new DefaultGuildDataProvider(this.opts.prefix);
+        this.validatePrefs();
 
         this.provider = this.opts.provider;
         this.embeds = new EmbedBuilder(this);
@@ -194,6 +150,58 @@ export abstract class IvyEngine {
     abstract registerModules(): void;
     abstract registerFlows(): void;
     abstract onReady(client: Client): void;
+
+    private validatePrefs = () => {
+        let { logger, opts } = this;
+        if (opts.superPerms.some(id => !isSnowflake(id)))
+            logger.warn(opts.name, `Non-Snowflake entries in superPerms array: [${join(opts.superPerms.filter(id => !isSnowflake(id)), ', ', _ => _)}]`);
+
+        if (opts.reportErrors.some(id => !isSnowflake(id)))
+            logger.warn(opts.name, `Non-Snowflake entries in reportErrors array: [${join(opts.reportErrors.filter(id => !isSnowflake(id)), ', ', _ => _)}]`);
+
+        if (this.opts.provider && this.opts.prefix) {
+            logger.severe(opts.name, 'Ambigious data provider options detected.');
+            logger.severe(opts.name, ' - Either supply a data provider or a prefix, not both.');
+            return process.exit(0);
+        }
+        
+        if (!this.opts.provider && !this.opts.prefix) {
+            logger.severe(opts.name, 'Cannot initialize DefaultGuildDataProvider without a prefix parameter.');
+            logger.severe(opts.name, ' - Either explicitly supply a data provider, or supply a prefix for use with the default provider.');
+            return process.exit(0);
+        }
+
+        if (!this.opts.provider && this.opts.prefix)
+            this.opts.provider = new DefaultGuildDataProvider(opts.prefix);
+
+        if (!this.opts.commandMessages)
+            this.opts.commandMessages = {
+                permission: (_user, _message, _command) => this.embeds.build('Whoops', IvyEmbedIcons.ERROR, `You don't have permission to do this.`),
+                commandError: (_user, message, _name, _args) => this.embeds.build('Huh? That wasn\'t supposed to happen..', IvyEmbedIcons.ERROR, 'Something went wrong while processing your command.', [], message),
+                commandErrorVerbose: (_user, message, name, args, error) => this.embeds.build('Huh? That wasn\'t supposed to happen..', IvyEmbedIcons.ERROR, `Something went wrong while processing your command.`, [
+                    {
+                        name: 'Command',
+                        value: codeBlock('', name),
+                        inline: true
+                    },
+                    {
+                        name: 'Arguments',
+                        value: codeBlock('json', JSON.stringify(args)),
+                        inline: true
+                    },
+                    {
+                        name: 'Error',
+                        value: codeBlock('', error.message),
+                        inline: false
+                    },
+                    {
+                        name: 'Stacktrace',
+                        value: codeBlock('', error.stack),
+                        inline: false
+                    }
+                ], message)
+            }
+    }
 
     /**
      * Registers a command.

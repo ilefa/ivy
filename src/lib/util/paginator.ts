@@ -59,36 +59,38 @@ export class PaginatedEmbed {
 
         channel
             .send(this.generatePage(this.page))
-            .then(msg => this.init(msg));
+            .then(this.init);
     }
 
-    static of(engine: IvyEngine,
-              channel: TextChannel,
-              author: User,
-              title: string,
-              icon: string,
-              pages: PageContent[],
-              timeout: number = 60000,
-              thumbnail: string = null,
-              beginColor: string = 'black',
-              endColor: string = engine.opts.color.toString(),
-              footerIcon: string = null): PaginatedEmbed {
-        return new PaginatedEmbed(engine, channel, author, title, icon, pages, timeout, thumbnail, beginColor, endColor, footerIcon);
+    static of = (engine: IvyEngine,
+                 channel: TextChannel,
+                 author: User,
+                 title: string,
+                 icon: string,
+                 pages: PageContent[],
+                 timeout: number = 60000,
+                 thumbnail: string = null,
+                 beginColor: string = 'black',
+                 endColor: string = engine.opts.color.toString(),
+                 footerIcon: string = null) => {
+        return new PaginatedEmbed(engine, channel, author,
+            title, icon, pages, timeout, thumbnail,
+            beginColor, endColor, footerIcon);
     }
 
-    static ofItems<T>(engine: IvyEngine,
-                      channel: TextChannel,
-                      author: User,
-                      title: string,
-                      icon: string,
-                      items: T[],
-                      perPage: number,
-                      transform: (itemsOnPage: T[]) => PageContent,
-                      timeout: number = 60000,
-                      thumbnail: string = null,
-                      beginColor: string = 'black',
-                      endColor: string = engine.opts.color.toString(),
-                      footerIcon: string = null) {
+    static ofItems = <T>(engine: IvyEngine,
+                         channel: TextChannel,
+                         author: User,
+                         title: string,
+                         icon: string,
+                         items: T[],
+                         perPage: number,
+                         transform: (itemsOnPage: T[]) => PageContent,
+                         timeout: number = 60000,
+                         thumbnail: string = null,
+                         beginColor: string = 'black',
+                         endColor: string = engine.opts.color.toString(),
+                         footerIcon: string = null) => {
 
         let total = Math.ceil(items.length / perPage);
 
