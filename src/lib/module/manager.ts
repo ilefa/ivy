@@ -41,6 +41,7 @@ export class ModuleManager {
 
         module.client = this.client;
         module.manager = this;
+        module.loaded = true;
     
         this.modules.push(module);
         module.start();
@@ -52,6 +53,7 @@ export class ModuleManager {
         }
 
         module.end();
+        module.loaded = false;
         this.modules = this.modules.filter(m => m.name.toLowerCase() !== module.name.toLowerCase());
     }
 

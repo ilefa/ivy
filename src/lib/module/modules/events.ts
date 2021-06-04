@@ -48,9 +48,11 @@ export abstract class EventManager extends Module {
      * @param message the incoming message
      */
     onMessage = async (message: Message) => {
-        if (message.author.bot) {
+        if (!this.loaded)
             return;
-        }
+
+        if (message.author.bot)
+            return;
               
         let provider = await this
             .engine
@@ -58,9 +60,8 @@ export abstract class EventManager extends Module {
             .provider
             .load(message.guild);
             
-        if (!message.content.startsWith(provider.prefix)) {
+        if (!message.content.startsWith(provider.prefix))
             return;
-        }
     
         this.commandCenter.handle(message.author, message);
     }
@@ -96,6 +97,9 @@ export abstract class EventManager extends Module {
     onException = (error: Error) => this.handleException(error, 'Encountered a uncaught exception');
 
     private handleException = (error: Error, head: string) => {
+        if (!this.loaded)
+            return;
+            
         this.engine.logger.except(error, this.engine.opts.name, head);
         this.engine.logger.severe(this.engine.opts.name, error.stack);
     }

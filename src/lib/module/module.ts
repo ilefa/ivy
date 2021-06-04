@@ -24,6 +24,7 @@ export abstract class Module {
     client: Client;
     manager: ModuleManager;
     logger: Logger;
+    loaded: boolean;
 
     constructor(public name: string, private logPrefix?: string) {}
 
