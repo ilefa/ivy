@@ -55,7 +55,7 @@ export class PaginatedEmbed {
 
         this.page = 1;
         this.colorGradient = TinyGradient([beginColor, endColor]);
-        if (!footerIcon) this.footerIcon = this.message.guild.iconURL();
+        if (!footerIcon) this.footerIcon = this.channel.guild.iconURL();
 
         channel
             .send(this.generatePage(this.page))
