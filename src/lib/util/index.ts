@@ -90,6 +90,7 @@ export type VoiceConnectionPrefs = {
 export enum VoiceStateChange {
     CONNECT,
     DISCONNECT,
+    SWITCH,
     DEAF,
     MUTE,
     UNDEAF,
@@ -226,6 +227,9 @@ export const determineVoiceStateChange = (a: VoiceState, b: VoiceState) => {
     
     if (a.channel && !b.channel)
         return VoiceStateChange.DISCONNECT;
+
+    if (a.channel && b.channel && a.channelID !== b.channelID)
+        return VoiceStateChange.SWITCH;
     
     if (!a.deaf && b.deaf)
         return VoiceStateChange.DEAF;

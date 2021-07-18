@@ -114,7 +114,14 @@ export class CommandManager extends Module {
      * @param message the message the user sent
      */
     async handle(user: User, message: Message) {
-        let split = message.content.substring(1).split(' ');
+        let provider = await this
+            .engine
+            .opts
+            .provider
+            .load(message.guild)
+
+        let offset = provider.prefix.length || 1;
+        let split = message.content.substring(offset).split(' ');
         let name = split.splice(0, 1)[0];
         let args = split.splice(0, split.length);
 
