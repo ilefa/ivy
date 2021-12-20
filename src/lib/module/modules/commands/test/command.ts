@@ -19,12 +19,12 @@ import { TestFlow } from './flow';
 import { Message, User } from 'discord.js';
 import { GenericTestCommand } from './generic';
 import { Command, CommandReturn } from '../command';
-import { codeBlock, CustomPermissions, emboss, timeDiff } from '../../../../util';
+import { codeBlock, emboss, timeDiff } from '../../../../util';
 
 export abstract class TestCommand extends Command implements TestFlow {
 
     constructor(public name: string) {
-        super(name, null, null, [], CustomPermissions.SUPER_PERMS);
+        super(name, null, null, [], 'SUPER_PERMS');
     }
 
     async execute(user: User, message: Message, args: string[]): Promise<CommandReturn> {

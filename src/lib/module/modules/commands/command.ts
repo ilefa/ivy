@@ -19,7 +19,25 @@ import { Logger } from '../../../logger';
 import { CommandManager } from './manager';
 import { IvyEngine } from '../../../engine';
 import { EmbedBuilder } from '../../../util';
-import { User, Message, EmbedFieldData } from 'discord.js';
+
+import {
+    EmbedFieldData,
+    Message,
+    MessageEmbed,
+    MessageOptions,
+    MessagePayload,
+    PermissionResolvable,
+    User
+} from 'discord.js';
+
+export type CommandEntry = {
+    name: string;
+    command: Command;
+}
+
+export enum CommandReturn {
+    EXIT, HELP_MENU
+}
 
 export abstract class Command {
     
@@ -38,6 +56,7 @@ export abstract class Command {
      * @param permission the required permission
      * @param deleteMessage whether or not to delete the original command message
      * @param hideFromHelp whether or not to hide this command from the help menu
+     * @param category the category this command falls under
      * @param permitRoles an array of role names or ids that are permitted to execute this command
      * @param permitUsers an array of user ids that are permitted to execute this command
      * @param internalCommand whether or not to only run when executed on a server included in the `reportErrors` array
@@ -46,9 +65,10 @@ export abstract class Command {
                 public help: string,
                 public helpTitle: string,
                 public helpFields: EmbedFieldData[],
-                public permission: number,
+                public permission: PermissionResolvable | 'SUPER_PERMS',
                 public deleteMessage = true,
                 public hideFromHelp = false,
+                public category: string = null,
                 public permitRoles: string[] = [],
                 public permitUsers: string[] = [],
                 public internalCommand = false) {
@@ -69,13 +89,21 @@ export abstract class Command {
      */
     abstract execute(user: User, message: Message, args: string[]): Promise<CommandReturn>;
 
-}
+    /**
+     * Responds to a message with the provided parameters.
+     * 
+     * @param message the message to respond to
+     * @param content the content to respond with
+     * @param ping whether or not the ping the author of the original message
+     */
+    reply(message: Message, content: string | MessageEmbed, ping = false) {
+        let opts: MessagePayload | MessageOptions = typeof content === 'string'
+            ? { content }
+            : { embeds: [content] };
 
-export type CommandEntry = {
-    name: string;
-    command: Command;
-}
+        return ping
+            ? message.reply(opts)
+            : message.channel.send(opts);
+    }
 
-export enum CommandReturn {
-    EXIT, HELP_MENU
 }

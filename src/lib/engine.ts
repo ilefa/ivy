@@ -27,8 +27,10 @@ import {
     ClientOptions,
     ColorResolvable,
     Guild,
+    Intents,
     Message,
     MessageEmbed,
+    PermissionResolvable,
     PresenceData,
     TextChannel,
     User
@@ -63,9 +65,9 @@ export type IvyEngineOptions = {
 }
 
 export type IvyCommandMessages = {
-    permission: (user: User, message: Message, command: Command) => MessageEmbed | string;
-    commandError: (user: User, message: Message, name: string, args: string[]) => MessageEmbed | string;
-    commandErrorVerbose: (user: User, message: Message, name: string, args: string[], error: Error) => MessageEmbed | string;
+    permission: (user: User, message: Message, command: Command) => MessageEmbed;
+    commandError: (user: User, message: Message, name: string, args: string[]) => MessageEmbed;
+    commandErrorVerbose: (user: User, message: Message, name: string, args: string[], error: Error) => MessageEmbed;
 }
 
 export enum IvyEmbedIcons {
@@ -109,6 +111,16 @@ export abstract class IvyEngine {
 
         this.opts.startup?.run(this);
         this.client = new Client(opts.discord || {
+            intents: [
+                Intents.FLAGS.GUILDS,
+                Intents.FLAGS.GUILD_BANS,
+                Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
+                Intents.FLAGS.GUILD_INTEGRATIONS,
+                Intents.FLAGS.GUILD_MEMBERS,
+                Intents.FLAGS.GUILD_MESSAGES,
+                Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+                Intents.FLAGS.GUILD_VOICE_STATES,
+                Intents.FLAGS.GUILD_WEBHOOKS],
             partials: ['CHANNEL', 'MESSAGE', 'REACTION']
         });
 
@@ -136,10 +148,10 @@ export abstract class IvyEngine {
             this.logger.info(opts.name, 'Successfully connected to Discord.');
             this.client.user.setPresence(opts.presence || {
                 status: 'online',
-                activity: {
+                activities: [{
                     type: 'PLAYING',
                     name: 'with the ivy platform.'
-                }
+                }]
             });
 
             this.onReady(this.client);
@@ -278,10 +290,13 @@ export abstract class IvyEngine {
      * @param permission the permission in question
      * @param guild the guild in which this takes place
      */
-    has = (user: User, permission: number, guild: Guild) => {
+    has = (user: User, permission: PermissionResolvable, guild: Guild) => {
         return guild
-            .member(user)
-            .hasPermission(permission) 
+            .members
+            .cache
+            .get(user.id)
+            .permissions
+            .has(permission) 
                 || this
                     .opts
                     .superPerms

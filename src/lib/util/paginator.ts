@@ -58,7 +58,7 @@ export class PaginatedEmbed {
         if (!footerIcon) this.footerIcon = this.channel.guild.iconURL();
 
         channel
-            .send(this.generatePage(this.page))
+            .send({ embeds: [this.generatePage(this.page)] })
             .then(this.init);
     }
 
@@ -115,11 +115,12 @@ export class PaginatedEmbed {
 
     private generatePage(pnum: number) {
         let pind = pnum - 1;
+        let { r, g, b } = this.getColor(pind);
         return this.engine.embeds.build(this.title, this.icon, this.pages[pind]?.description || '', this.pages[pind]?.fields || [])
                 .setTimestamp()
                 .setThumbnail(this.thumbnail)
                 .setFooter(`Page ${pnum} of ${this.pages.length}`, this.footerIcon)
-                .setColor(this.getColor(pind));
+                .setColor([r, g, b]);
     }
 
     private init(message: Message) {
@@ -127,13 +128,16 @@ export class PaginatedEmbed {
         if (this.pages.length === 1)
             return;
 
-        this.collector = message.createReactionCollector((_reaction: MessageReaction, user: User) => !user.bot && user.id === this.author.id, {
-            time: this.timeout
-        });
+        this.collector = message.createReactionCollector(
+            {
+                filter: (_reaction: MessageReaction, user: User) => !user.bot && user.id === this.author.id,
+                time: this.timeout
+            }
+        );
 
         this.collector.on('collect', (reaction, user) => {
             if (this.functionMap.get(reaction.emoji.name)(this)) {
-                this.message.edit(this.generatePage(this.page));
+                this.message.edit({ embeds: [this.generatePage(this.page)] });
             }
 
             reaction.users.remove(user);
@@ -179,7 +183,7 @@ export class PaginatedEmbed {
 
     private getColor(index: number) {
         let val = index / ( this.pages.length - 1);
-        return this.colorGradient.rgbAt(val).toHexString();
+        return this.colorGradient.rgbAt(val).toRgb();
     }
 
 }

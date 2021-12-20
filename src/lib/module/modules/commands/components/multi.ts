@@ -19,14 +19,14 @@ import { Module } from '../../../';
 import { bold } from '../../../../util';
 import { CommandComponent } from './component';
 import { Command, CommandReturn } from '../command';
-import { EmbedFieldData, Message, User } from 'discord.js';
+import { EmbedFieldData, Message, PermissionResolvable, User } from 'discord.js';
 
 export abstract class MultiCommand<M extends Module> extends Command {
     
     components: Map<string, CommandComponent<M>>;
 
     constructor(public base: string,
-                public basePermission: number,
+                public basePermission: PermissionResolvable | 'SUPER_PERMS',
                 public baseManager: M,
                 public baseHelp: string = 'Invalid usage, available subcommands are listed below.') {
         super(base, baseHelp, null, [], basePermission);
@@ -48,12 +48,17 @@ export abstract class MultiCommand<M extends Module> extends Command {
 
     async execute(user: User, message: Message, args: string[]): Promise<CommandReturn> {
         let component = this.getComponent(args);
-        if (!component) {
+        if (!component)
             return CommandReturn.HELP_MENU;
+
+        let superOnly = this.permission === 'SUPER_PERMS';
+        if (superOnly && !this.engine.opts.superPerms.includes(user.id)) {
+            message.reply({ embeds: [this.engine.opts.commandMessages.permission(user, message, this)] });
+            return CommandReturn.EXIT;
         }
 
-        if (!this.manager.engine.has(user, this.permission, message.guild)) {
-            message.reply(this.engine.opts.commandMessages.permission(user, message, this));
+        if (!this.manager.engine.has(user, this.permission as PermissionResolvable, message.guild)) {
+            message.reply({ embeds: [this.engine.opts.commandMessages.permission(user, message, this)] });
             return CommandReturn.EXIT;
         }
 

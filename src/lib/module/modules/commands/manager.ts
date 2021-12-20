@@ -16,7 +16,7 @@
  */
 
 import { Module } from '../../module';
-import { User, Message, Client } from 'discord.js';
+import { User, Message, Client, PermissionResolvable } from 'discord.js';
 import { isSnowflake, numberEnding } from '../../../util';
 import { IvyEmbedIcons, IvyEngine } from '../../../engine';
 
@@ -51,6 +51,7 @@ export class CommandManager extends Module {
     registerCommand(command: Command) {
         command.manager = this;
         command.start();
+
         this.commands.push({
             name: command.name,
             command
@@ -131,10 +132,19 @@ export class CommandManager extends Module {
                     if (cmd.command.internalCommand && !this.engine.opts.reportErrors.includes(message.guild.id))
                         break;
 
-                    if (!this.engine.has(user, cmd.command.permission, message.guild)
+                    let superOnly = cmd.command.permission === 'SUPER_PERMS';
+                    if (superOnly
+                            && !this.engine.opts.superPerms.includes(message.author.id)
                             && !this.hasAnyPermittedRoles(message, cmd)
                             && !this.isPermittedUser(message, cmd)) {
-                        message.reply(this.engine.opts.commandMessages.permission(user, message, cmd.command));
+                        message.reply({ embeds: [this.engine.opts.commandMessages.permission(user, message, cmd.command)] });
+                        break;
+                    }
+
+                    if (!this.engine.has(user, cmd.command.permission as PermissionResolvable, message.guild)
+                            && !this.hasAnyPermittedRoles(message, cmd)
+                            && !this.isPermittedUser(message, cmd)) {
+                        message.reply({ embeds: [this.engine.opts.commandMessages.permission(user, message, cmd.command)] });
                         break;
                     }
 
@@ -151,7 +161,7 @@ export class CommandManager extends Module {
                             message.delete();
                         }
 
-                        message.reply(helpEmbed);
+                        message.reply({ embeds: [helpEmbed] });
                         break;
                     }
 
@@ -164,30 +174,33 @@ export class CommandManager extends Module {
                         break;
                     }
 
-                    message.reply(helpEmbed);
+                    message.reply({ embeds: [helpEmbed] });
                     break;
                 } catch (e) {                    
                     if (this.engine.opts.reportErrors.includes(message.guild.id)) {
-                        message.reply(this.engine.opts.commandMessages.commandErrorVerbose(user, message, name, args, e));
+                        message.reply({ embeds: [this.engine.opts.commandMessages.commandErrorVerbose(user, message, name, args, e)] });
                         this.engine.logger.except(e, this.name, 'Encountered an exception while processing a command');
                         this.engine.logger.unlisted(e.stack);
                         return;
                     }
 
-                    message.reply(this.engine.opts.commandMessages.commandError(user, message, name, args));
+                    message.reply({ embeds: [this.engine.opts.commandMessages.commandError(user, message, name, args)] });
                     this.engine.logger.except(e, this.name, 'Encountered an exception while processing a command');
                 }
             }
         }
     }
 
-    private hasAnyPermittedRoles = (message: Message, { command }: CommandEntry) => {
-        return message.member.roles.cache.some(role => command.permitRoles.some(raw => {
-            if (isSnowflake(raw))
-                return role.id === raw;
-            return role.name.toLowerCase() === raw.toLowerCase();
-        }));
-    }
+    private hasAnyPermittedRoles = (message: Message, { command }: CommandEntry) =>
+        message
+            .member
+            .roles
+            .cache
+            .some(role => command.permitRoles.some(raw => {
+                if (isSnowflake(raw))
+                    return role.id === raw;
+                return role.name.toLowerCase() === raw.toLowerCase();
+            }));
 
     private isPermittedUser = (message: Message, { command }: CommandEntry) => {
         return command.permitUsers.includes(message.author.id);

@@ -1,6 +1,7 @@
 # Directories
 test/
 dist/
+build/
 .vscode/
 node_modules/
 

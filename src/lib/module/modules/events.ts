@@ -18,7 +18,12 @@
 import { Module } from '../module';
 import { IvyEngine } from '../../engine';
 import { CommandManager } from './commands';
-import { Message, MessageReaction } from 'discord.js';
+
+import {
+    Message, 
+    MessageReaction,
+    PartialMessageReaction
+} from 'discord.js';
 
 export abstract class EventManager extends Module {
     
@@ -32,10 +37,12 @@ export abstract class EventManager extends Module {
     }
 
     start() {
-        this.client.on('message', _ => this.onMessage(_));
-        this.client.on('messageReactionAdd', _ => this.onReact(_));
-        this.client.on('messageReactionRemove', _ => this.onReactRemoved(_));
-        this.client.on('error', _ => this.onDiscordError(_));
+        let self = this;
+
+        this.client.on('message', _ => self.onMessage(_));
+        this.client.on('messageReactionAdd', _ => self.onReact(_));
+        this.client.on('messageReactionRemove', _ => self.onReactRemoved(_));
+        this.client.on('error', _ => self.onDiscordError(_));
 
         process.on('unhandledRejection', (err: any) => this.onRejection(err));
         process.on('uncaughtException', (err: any) => this.onException(err));
@@ -70,13 +77,13 @@ export abstract class EventManager extends Module {
      * Fired when a reaction is added to a message.
      * @param reaction the added reaction
      */
-    onReact = (reaction: MessageReaction) => {}
+    onReact = (_reaction: MessageReaction | PartialMessageReaction) => {}
 
     /**
      * Fired when a reaction is removed from a message.
      * @param reaction the removed reaction
      */
-    onReactRemoved = (reaction: MessageReaction) => {}
+    onReactRemoved = (_reaction: MessageReaction | PartialMessageReaction) => {}
 
     /**
      * Fired if Discord.js encounters an unhandled exception.

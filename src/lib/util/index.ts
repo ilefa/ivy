@@ -22,7 +22,6 @@ import { Readable } from 'stream';
 import { Units } from 'parse-duration';
 
 import {
-    ChannelResolvable,
     Client,
     Emoji,
     GuildResolvable,
@@ -35,13 +34,13 @@ import {
     Permissions,
     PermissionFlags,
     Role,
-    StreamOptions,
     User,
     UserResolvable,
-    VoiceBroadcast,
     VoiceChannel,
-    VoiceConnection,
-    VoiceState
+    VoiceState,
+    PermissionResolvable,
+    BitField,
+    PermissionString
 } from 'discord.js';
 
 export * from './embed';
@@ -72,20 +71,6 @@ export type GenericPredicate<T> = (elem: T, index: number) => boolean;
 export type GenericReducer<T> = (prev: T, current: T, index: number) => T;
 export type GenericSorter<T> = (a: T, b: T) => number;
 export type GenericTransformer<T> = (elem: T, index: number) => T;
-
-export const DEFAULT_STREAM_OPTS: StreamOptions = {
-    type: 'opus',
-    volume: 1
-}
-
-export type VoiceConnectionPrefs = {
-    source: VoiceBroadcast | Readable | string;
-    stream: StreamOptions;
-    volume?: number;
-    onConnect?: (channel: VoiceChannel) => void;
-    onFinish?: (channel: VoiceChannel) => void;
-    onError?: (channel: VoiceChannel, err: Error) => void;
-}
 
 export enum VoiceStateChange {
     CONNECT,
@@ -178,42 +163,6 @@ export const resolvableToId = (resolvable: UserResolvable | GuildResolvable) => 
 }
 
 /**
- * Attempts to find a voice connection for the given
- * match, or uses a manually specified predicate.
- * 
- * @example
- * ```ts
- * // searches for a voice connection active in the provided guild or voice channel
- * getVoiceConnection(client, guild | channel)
- * 
- * // searches for a voice connection active in the provided channel by using a manual predicate
- * getVoiceConnection(client, null, connection => connection.channel.id === channel.id)
- * ```
- * 
- * @param client an instance of a Discord.js client
- * @param match a resolvable type to match
- * @param predicate an optional predicate to manually match
- */
-export const getVoiceConnection = (client: Client, match: GuildResolvable | ChannelResolvable, predicate?: (connection: VoiceConnection) => boolean) => {
-    if (predicate) return client.voice.connections.find(predicate);
-
-    let type = null;
-    if (match instanceof Guild || match instanceof VoiceChannel) {
-        type = match instanceof Guild
-            ? VoiceConnectionMatchType.GUILD
-            : VoiceConnectionMatchType.CHANNEL
-        match = match.id
-    }
-    
-    if (!type) throw new Error('`match` parameter must be a guild or voice channel resolvable type.');
-
-    return client.voice.connections.find(connection =>
-        type === VoiceConnectionMatchType.GUILD 
-            ? connection.channel.guild.id === match
-            : connection.channel.id === match);
-}
-
-/**
  * Attempts to determine the change
  * in two voice states and return
  * an enum constant representing it.
@@ -228,7 +177,7 @@ export const determineVoiceStateChange = (a: VoiceState, b: VoiceState) => {
     if (a.channel && !b.channel)
         return VoiceStateChange.DISCONNECT;
 
-    if (a.channel && b.channel && a.channelID !== b.channelID)
+    if (a.channel && b.channel && a.channelId !== b.channelId)
         return VoiceStateChange.SWITCH;
     
     if (!a.deaf && b.deaf)
@@ -265,35 +214,6 @@ export const determineVoiceStateChange = (a: VoiceState, b: VoiceState) => {
 }
 
 /**
- * Returns whether or not there is a user
- * alone in a given voice channel.
- * 
- * @param source the source channel or state
- */
-export const isAloneInVC = (source: VoiceState | VoiceChannel) => {
-    if (source instanceof VoiceState)
-        source = source.channel;
-
-    return source.members.size === 1;
-}
-
-/**
- * Returns the user, if they exist, that is
- * alone in a given voice channel.
- * 
- * @param source the source channel or state
- */
-export const whoIsAloneInVC = (source: VoiceState | VoiceChannel) => {
-    if (!isAloneInVC(source))
-        return null;
-
-    if (source instanceof VoiceState)
-        source = source.channel;
-
-    return source.members.array()[0].user;
-}
-
-/**
  * Attempts to find a user by a mention, or by
  * their snowflake ID from a given message.
  * 
@@ -324,46 +244,6 @@ export const findUser = async (message: Message, input: string, def: User) => {
 
     return target;
 }
-
-/**
- * Attempts to join a voice channel and stream
- * the specified data according to the preferences
- * object supplied to this function.
- * 
- * @param channel the voice channel to join
- * @param prefs preferences for the audio stream
- */
-export const streamAudio = (channel: VoiceChannel, prefs: VoiceConnectionPrefs) =>
-    channel
-        .join()
-        .then(async connection => {
-            if (prefs.onConnect)
-                prefs.onConnect(channel);
-
-            let dispatcher = connection.play(prefs.source, prefs.stream);
-            
-            dispatcher.on('finish', () => {
-                if (!prefs.onFinish) 
-                    return channel.leave();
-                
-                prefs.onFinish(channel);
-            });
-
-            dispatcher.on('error', err => {
-                if (!prefs.onError)
-                    return console.error(err);
-                
-                prefs.onError(channel, err);
-            });
-        })
-        .catch(err => {
-            if (!prefs.onError) {
-                console.error(err);
-                return channel.leave();
-            }
-
-            prefs.onError(channel, err);
-        });
 
 /**
  * Blocks all I/O for the
@@ -450,13 +330,6 @@ export const replace = (input: string, replacements: SearchAndReplace[]) => {
 
     return temp;
 }
-
-export interface PermissionAddons extends PermissionFlags {
-    SUPER_PERMS: number;
-}
-
-export const CustomPermissions: PermissionAddons = Permissions.FLAGS as PermissionAddons;
-CustomPermissions.SUPER_PERMS = 100000
 
 /**
  * Retrieves the formatted duration string

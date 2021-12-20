@@ -19,14 +19,14 @@
 import { Module } from '../../../';
 import { MultiCommand } from './multi';
 import { CommandReturn } from '../command';
-import { Message, User } from 'discord.js';
+import { Message, PermissionResolvable, User } from 'discord.js';
 
 export abstract class CommandComponent<M extends Module> {
 
     manager: M;
     host: MultiCommand<M>;
 
-    constructor(public name: string, public help: string, public permission: number) {
+    constructor(public name: string, public help: string, public permission: PermissionResolvable | 'SUPER_PERMS') {
         this.name = name;
         this.help = help;
         this.permission = permission;
