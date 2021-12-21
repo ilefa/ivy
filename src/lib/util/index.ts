@@ -18,7 +18,6 @@
 import moment from 'moment';
 import df from 'parse-duration';
 
-import { Readable } from 'stream';
 import { Units } from 'parse-duration';
 
 import {
@@ -31,16 +30,10 @@ import {
     GuildMember,
     Invite,
     Message,
-    Permissions,
-    PermissionFlags,
     Role,
     User,
     UserResolvable,
-    VoiceChannel,
     VoiceState,
-    PermissionResolvable,
-    BitField,
-    PermissionString
 } from 'discord.js';
 
 export * from './embed';

@@ -16,9 +16,10 @@
  */
 
 import { Module } from '../../module';
-import { User, Message, Client, PermissionResolvable } from 'discord.js';
+import { Logger } from '../../../logger';
 import { isSnowflake, numberEnding } from '../../../util';
 import { IvyEmbedIcons, IvyEngine } from '../../../engine';
+import { User, Message, Client, PermissionResolvable } from 'discord.js';
 
 import {
     Command,
@@ -32,12 +33,14 @@ import {
 export class CommandManager extends Module {
     
     client: Client;
+    logger: Logger;
     commands: CommandEntry[];
     testFlows: TestCommandEntry[];
     
     constructor(public engine: IvyEngine) {
         super('Commands');
         this.client = engine.client;
+        this.logger = engine.logger;
         this.commands = [];
         this.testFlows = [];
     }
@@ -91,7 +94,7 @@ export class CommandManager extends Module {
 
     start() {
         this.commands = this.commands.sort((a, b) => a.name.localeCompare(b.name));
-        this.engine.logger.info(this.name, `Registered ${this.commands.length} command${numberEnding(this.commands.length)}.`);
+        this.logger.info(this.name, `Registered ${this.commands.length} command${numberEnding(this.commands.length)}.`);
     }
 
     end = () => this.commands = [];
@@ -179,13 +182,13 @@ export class CommandManager extends Module {
                 } catch (e) {                    
                     if (this.engine.opts.reportErrors.includes(message.guild.id)) {
                         message.reply({ embeds: [this.engine.opts.commandMessages.commandErrorVerbose(user, message, name, args, e)] });
-                        this.engine.logger.except(e, this.name, 'Encountered an exception while processing a command');
-                        this.engine.logger.unlisted(e.stack);
+                        this.logger.except(e, this.name, 'Encountered an exception while processing a command');
+                        this.logger.unlisted(e.stack);
                         return;
                     }
 
                     message.reply({ embeds: [this.engine.opts.commandMessages.commandError(user, message, name, args)] });
-                    this.engine.logger.except(e, this.name, 'Encountered an exception while processing a command');
+                    this.logger.except(e, this.name, 'Encountered an exception while processing a command');
                 }
             }
         }
@@ -202,8 +205,6 @@ export class CommandManager extends Module {
                 return role.name.toLowerCase() === raw.toLowerCase();
             }));
 
-    private isPermittedUser = (message: Message, { command }: CommandEntry) => {
-        return command.permitUsers.includes(message.author.id);
-    }
+    private isPermittedUser = (message: Message, { command }: CommandEntry) => command.permitUsers.includes(message.author.id);
 
 }

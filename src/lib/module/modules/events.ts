@@ -20,6 +20,8 @@ import { IvyEngine } from '../../engine';
 import { CommandManager } from './commands';
 
 import {
+    CacheType,
+    Interaction,
     Message, 
     MessageReaction,
     PartialMessageReaction
@@ -39,9 +41,10 @@ export abstract class EventManager extends Module {
     start() {
         let self = this;
 
-        this.client.on('message', _ => self.onMessage(_));
+        this.client.on('messageCreate', _ => self.onMessage(_));
         this.client.on('messageReactionAdd', _ => self.onReact(_));
         this.client.on('messageReactionRemove', _ => self.onReactRemoved(_));
+        this.client.on('interactionCreate', _ => self.onInteraction(_));
         this.client.on('error', _ => self.onDiscordError(_));
 
         process.on('unhandledRejection', (err: any) => this.onRejection(err));
@@ -72,6 +75,12 @@ export abstract class EventManager extends Module {
     
         this.commandCenter.handle(message.author, message);
     }
+
+    /**
+     * Fired when an incoming interaction is received.
+     * @param interaction the incoming interaction
+     */
+    onInteraction = async (interaction: Interaction<CacheType>) => {}
 
     /**
      * Fired when a reaction is added to a message.
