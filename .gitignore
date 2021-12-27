@@ -6,4 +6,6 @@ build/
 node_modules/
 
 # Test Files
+.DS_Store
+._.*
 *.test.ts

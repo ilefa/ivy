@@ -32,6 +32,8 @@ export abstract class CommandComponent<M extends Module> {
         this.permission = permission;
     }
 
+    start() {}
+
     abstract execute(user: User, message: Message, args: string[]): Promise<CommandReturn>;
 
 }

@@ -70,6 +70,7 @@ export class AsyncRedisClient {
         this.srem = promisify(this.redis.srem).bind(this.redis);
         this.sismember = promisify(this.redis.sismember).bind(this.redis);
         this.smembers = promisify(this.redis.smembers).bind(this.redis);
+        this.setex = promisify(this.redis.setex).bind(this.redis);
     }
 
     static withInstance = (redis: RedisClient) => new AsyncRedisClient(null, redis); 

@@ -26,6 +26,7 @@ import {
     CommandEntry,
     CommandReturn,
     GenericTestCommand,
+    MultiCommand,
     TestCommand,
     TestCommandEntry
 } from '.';
@@ -54,6 +55,9 @@ export class CommandManager extends Module {
     registerCommand(command: Command) {
         command.manager = this;
         command.start();
+
+        if (command instanceof MultiCommand)
+            command.components.forEach(component => component.start());
 
         this.commands.push({
             name: command.name,
@@ -144,7 +148,8 @@ export class CommandManager extends Module {
                         break;
                     }
 
-                    if (!this.engine.has(user, cmd.command.permission as PermissionResolvable, message.guild)
+                    if (!superOnly
+                            && !this.engine.has(user, cmd.command.permission as PermissionResolvable, message.guild)
                             && !this.hasAnyPermittedRoles(message, cmd)
                             && !this.isPermittedUser(message, cmd)) {
                         message.reply({ embeds: [this.engine.opts.commandMessages.permission(user, message, cmd.command)] });

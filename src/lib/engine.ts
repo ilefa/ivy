@@ -284,23 +284,23 @@ export abstract class IvyEngine {
      * 
      * Note: This does not necessarily mean that
      * the user has that permission in the guild
-     * (in the case of superperms users always being true).
+     * (in the case of SuperPerms users always being true).
      * 
      * @param user the user in question
      * @param permission the permission in question
      * @param guild the guild in which this takes place
      */
-    has = (user: User, permission: PermissionResolvable, guild: Guild) => {
-        return guild
+    has = (user: User, permission: PermissionResolvable | 'SUPER_PERMS', guild: Guild) => {
+        let isSuper = this.opts.superPerms.includes(user.id);
+        if (permission === 'SUPER_PERMS')
+            return isSuper;
+
+        return isSuper || guild
             .members
             .cache
             .get(user.id)
             .permissions
-            .has(permission) 
-                || this
-                    .opts
-                    .superPerms
-                    .some(id => user.id === id)
+            .has(permission);
     }
 
     /**

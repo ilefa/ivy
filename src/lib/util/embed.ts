@@ -59,7 +59,7 @@ export class EmbedBuilder {
                     : 'unknown';
             
             embed = embed
-                .setFooter(`${metadata.member.displayName} in ${channelName}`, metadata.author.avatarURL())
+                .setFooter(`${metadata.member.displayName} in ${channelName}`, metadata.member.displayAvatarURL())
                 .setTimestamp();
         }
 

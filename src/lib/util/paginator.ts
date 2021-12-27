@@ -57,9 +57,11 @@ export class PaginatedEmbed {
         this.colorGradient = TinyGradient([beginColor, endColor]);
         if (!footerIcon) this.footerIcon = this.channel.guild.iconURL();
 
+        let self = this;
+
         channel
             .send({ embeds: [this.generatePage(this.page)] })
-            .then(this.init);
+            .then(this.init.bind(self));
     }
 
     static of = (engine: IvyEngine,
@@ -187,4 +189,3 @@ export class PaginatedEmbed {
     }
 
 }
-
